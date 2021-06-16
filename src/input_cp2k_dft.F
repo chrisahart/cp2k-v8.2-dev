@@ -4880,7 +4880,7 @@ CONTAINS
                           description="atoms_memory", &
                           usage="ATOMS_MEMORY", &
                           n_var=1, type_of_var=integer_t, &
-                          default_i_val=20)
+                          default_i_val=100)
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
 
