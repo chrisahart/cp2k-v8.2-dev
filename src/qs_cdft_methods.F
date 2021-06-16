@@ -678,7 +678,8 @@ CONTAINS
   LOGICAL                                            :: plot_hirshfeld_density, in_memory, my_just_gradients
   INTEGER                                            :: atom_a, handle, i, iatom, jatom, iatom2, iex, igroup, num_atoms, &
                                                         ikind, ithread, j, natom, npme, num_species, atoms_memory_num, &
-                                                        nthread, numexp, k, i2, j2, k2,  im, jm, km, atoms_memory
+                                                        nthread, numexp, k, i2, j2, k2,  im, jm, km, atoms_memory, &
+                                                        subpatch_pattern
   INTEGER, DIMENSION(:), POINTER                     :: atom_list, cores
   TYPE(cube_info_type)                               :: cube_info
   LOGICAL, ALLOCATABLE, DIMENSION(:)                 :: compute_charge, is_constraint
@@ -710,7 +711,7 @@ CONTAINS
     REAL(kind=dp), ALLOCATABLE, DIMENSION(:)           :: coefficients
     REAL(KIND=dp), POINTER, DIMENSION(:, :, :)             :: rho_temp!, rho_dr_temp
     REAL(KIND=dp), DIMENSION(:, :), POINTER            :: pab
-    INTEGER(KIND=int_8)                                :: subpatch_pattern
+    INTEGER(KIND=int_8)                                ::
     TYPE(realspace_grid_type)                :: rsgrid
     TYPE(realspace_grid_p_type), DIMENSION(:), POINTER :: rs_single, rs_single_charge, rs_single_dr, rs_single_gradient
    TYPE(realspace_grid_type), POINTER                 :: rs_rho_all, rs_rho_constr, rho_dr_temp, rs_rho_temp
