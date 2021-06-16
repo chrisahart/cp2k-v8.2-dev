@@ -711,7 +711,6 @@ CONTAINS
     REAL(kind=dp), ALLOCATABLE, DIMENSION(:)           :: coefficients
     REAL(KIND=dp), POINTER, DIMENSION(:, :, :)             :: rho_temp!, rho_dr_temp
     REAL(KIND=dp), DIMENSION(:, :), POINTER            :: pab
-    INTEGER(KIND=int_8)                                ::
     TYPE(realspace_grid_type)                :: rsgrid
     TYPE(realspace_grid_p_type), DIMENSION(:), POINTER :: rs_single, rs_single_charge, rs_single_dr, rs_single_gradient
    TYPE(realspace_grid_type), POINTER                 :: rs_rho_all, rs_rho_constr, rho_dr_temp, rs_rho_temp
