@@ -390,7 +390,7 @@ CONTAINS
                                               (/0.0_dp, 0.0_dp, 0.0_dp/), 1.0_dp, &
                                               pab, 0, 0, rs_cavity, cell, pw_env%cube_info(1), &
                                               radius=radius, ga_gb_function=GRID_FUNC_AB, &
-                                              use_subpatch=.TRUE., subpatch_pattern=0_int_8)
+                                              use_subpatch=.TRUE., subpatch_pattern=0)
                 ENDIF
              END DO
           END DO
