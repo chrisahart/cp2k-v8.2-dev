@@ -1171,7 +1171,7 @@ CONTAINS
 
       ! Calculate gradient if requested
       IF (cdft_control%in_memory .AND. .NOT. cdft_control%energy_only) THEN
-            PRINT *, "Calculate gradient"
+            IF (para_env%ionode) PRINT *, "Calculate gradient"
 
           DO igroup = 1, SIZE(cdft_control%group)
             DO k = lb_pw(3), ub_pw(3)
