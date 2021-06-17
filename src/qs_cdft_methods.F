@@ -1149,7 +1149,7 @@ CONTAINS
              CALL pw_pool_give_back_pw(auxbas_pw_pool, pw_single_dr(iatom)%pw)
          END DO
          t2 = m_walltime()
-         IF (para_env%ionode) PRINT *, "Finished calculating gradients_x", t1-t2
+         ! IF (para_env%ionode) PRINT *, "Finished calculating gradients_x", t1-t2
 
          DEALLOCATE (rs_single_dr)
          DEALLOCATE(num_species_small)
@@ -1171,7 +1171,7 @@ CONTAINS
 
       ! Calculate gradient if requested
       IF (cdft_control%in_memory .AND. .NOT. cdft_control%energy_only) THEN
-            IF (para_env%ionode) PRINT *, "Calculate gradient"
+            ! IF (para_env%ionode) PRINT *, "Calculate gradient"
 
           DO igroup = 1, SIZE(cdft_control%group)
             DO k = lb_pw(3), ub_pw(3)
@@ -1217,7 +1217,7 @@ CONTAINS
               CALL rs_grid_release(rs_rho_all)
             END DO ! igroup = 1, SIZE(cdft_control%group)
             t2 = m_walltime()
-            IF (para_env%ionode) PRINT *, "Finished calculating gradients", t1-t2
+            ! IF (para_env%ionode) PRINT *, "Finished calculating gradients", t1-t2
           END IF ! (cdft_control%in_memory) THEN
 
           ! Deallocate if allocated
@@ -1228,7 +1228,7 @@ CONTAINS
       CALL timestop(handle)
 
       t2 = m_walltime()
-      IF (para_env%ionode) PRINT *, "Finished deallocation", t1-t2
+      ! IF (para_env%ionode) PRINT *, "Finished deallocation", t1-t2
 
    END SUBROUTINE hirshfeld_constraint_low
 
