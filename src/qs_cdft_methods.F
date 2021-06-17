@@ -1081,7 +1081,7 @@ CONTAINS
                     CALL rs_grid_zero(rs_single_dr(i)%rs_grid)
                     ! rs_single_dr(i)%rs_grid%rs%r(:, :, :) = 0.0_dp
                  END DO
-                 IF (para_env%ionode) PRINT *, "Created rs_single_dr", t1-t2
+                 ! IF (para_env%ionode) PRINT *, "Created rs_single_dr", t1-t2
 
              DO iex = 1, numexp
 
