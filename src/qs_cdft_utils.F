@@ -699,6 +699,7 @@ CONTAINS
     ! Get constraint potential definitions from input
     ALLOCATE (cdft_control%strength(nvar))
     ALLOCATE (cdft_control%value(nvar))
+    ALLOCATE (cdft_control%pot(nvar))
     ALLOCATE (cdft_control%target(nvar))
     CALL section_vals_val_get(cdft_control_section, "STRENGTH", r_vals=rtmplist)
     IF (SIZE(rtmplist) /= nvar) &

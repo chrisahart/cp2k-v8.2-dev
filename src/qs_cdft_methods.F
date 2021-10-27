@@ -1587,8 +1587,8 @@ CONTAINS
 
         t2 = m_walltime()
         IF (para_env%ionode) PRINT *, "Finished calcuating forces", t1-t2
-
-          ! print_force, zero_force
+        IF (para_env%ionode) PRINT *, "energy%cdft", energy%cdft
+        IF (para_env%ionode)  PRINT *, "cdft_control%pot(:)", cdft_control%pot(:)
 
           DEALLOCATE (strength)
           DEALLOCATE (atom_of_kind)
@@ -1823,20 +1823,14 @@ CONTAINS
        energy%cdft = 0.0_dp
        DO ivar = 1, nvar
           energy%cdft = energy%cdft + (dE(ivar) - target_val(ivar))*strength(ivar)
-          !
-          ! IF (para_env%ionode) THEN
-          ! PRINT *, "strength(ivar)", strength(ivar)
-          ! PRINT *, "dE(ivar)", dE(ivar)
-          ! PRINT *, "target_val(ivar)", target_val(ivar)
-          ! PRINT *, "(dE(ivar) - target_val(ivar))*strength(ivar)", (dE(ivar) - target_val(ivar))*strength(ivar)
-          ! PRINT *, "energy%cdft", energy%cdft
-          ! END IF
+          ! IF (para_env%ionode) PRINT *, "energy%cdft", energy%cdft
        END DO
 
-       ! dE(igroup) = dE(igroup) + sign * &
-       !              accurate_sum(group(igroup)%weight%pw%cr3d * rho_r(i)%pw%cr3d) * dvol
-
-
+       ! Calculate constraint potential energy V int dr w(r) rho(r)
+       DO ivar = 1, nvar
+          cdft_control%pot(ivar) = cdft_control%value(ivar)*strength(ivar)
+          ! IF (para_env%ionode)  PRINT *, "cdft_control%pot(:)", cdft_control%pot(:)
+       END DO
 
        ! Print constraint info and atomic CDFT charges
        CALL cdft_constraint_print(qs_env, electronic_charge)

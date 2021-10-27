@@ -164,6 +164,7 @@ MODULE qs_cdft_types
 !> \param strength              Lagrangian multipliers of the constraints
 !> \param target                target values of the constraints
 !> \param value                 integrated values of the constraints
+!> \param pot                   constraint potential energy
 !> \param charges_fragment      atomic partial charges computed from the isolated fragment densities
 !> \param becke_control         control parameters for Becke constraints
 !> \param group                 container for atom groups each defining their own constraint
@@ -263,7 +264,7 @@ MODULE qs_cdft_types
                                               first_iteration, print_weight, in_memory, &
                                               print_force, energy_only, debug
       LOGICAL, POINTER, DIMENSION(:)       :: is_constraint
-      REAL(KIND=dp), DIMENSION(:), POINTER :: strength, TARGET, value
+      REAL(KIND=dp), DIMENSION(:), POINTER :: strength, TARGET, value, pot
       REAL(KIND=dp), POINTER, &
          DIMENSION(:, :)                   :: charges_fragment
       TYPE(becke_constraint_type), POINTER :: becke_control
@@ -402,6 +403,7 @@ CONTAINS
       NULLIFY (cdft_control%strength)
       NULLIFY (cdft_control%target)
       NULLIFY (cdft_control%value)
+      NULLIFY (cdft_control%pot)
       NULLIFY (cdft_control%atoms)
       NULLIFY (cdft_control%is_constraint)
       NULLIFY (cdft_control%charges_fragment)
@@ -497,6 +499,8 @@ CONTAINS
             DEALLOCATE (cdft_control%target)
          IF (ASSOCIATED(cdft_control%value)) &
             DEALLOCATE (cdft_control%value)
+         IF (ASSOCIATED(cdft_control%pot)) &
+            DEALLOCATE (cdft_control%pot)
          IF (ASSOCIATED(cdft_control%charges_fragment)) &
             DEALLOCATE (cdft_control%charges_fragment)
          IF (ASSOCIATED(cdft_control%fragments)) &
