@@ -1587,7 +1587,6 @@ CONTAINS
 
         t2 = m_walltime()
         IF (para_env%ionode) PRINT *, "Finished calcuating forces", t1-t2
-        IF (para_env%ionode) PRINT *, "energy%cdft", energy%cdft
         IF (para_env%ionode)  PRINT *, "cdft_control%pot(:)", cdft_control%pot(:)
 
           DEALLOCATE (strength)
