@@ -125,6 +125,7 @@ MODULE qs_cdft_types
 !>                              of isolated fragment b
 !> \param ref_count             the ref count
 !> \param need_pot              logical which determines if the Becke potential needs to be built
+!> \param calc_pot              logical which determines if CDFT potential energy is calculated (qs_ks_utils.F)
 !> \param save_pot              logical which determines if the Becke potential should be saved until forces
 !>                              have been evaluated
 !> \param atomic_charges        flag that determines if atomic CDFT charges should be computed
@@ -255,7 +256,7 @@ MODULE qs_cdft_types
                                               purge_freq, nbad_conv, purge_offset, &
                                               istep, ienergy, natoms
       INTEGER, POINTER, DIMENSION(:)       :: atoms
-      LOGICAL                              :: need_pot, save_pot, do_et, &
+      LOGICAL                              :: need_pot, calc_pot, save_pot, do_et, &
                                               reuse_precond, purge_history, &
                                               should_purge, calculate_metric, &
                                               atomic_charges, fragment_density, &
@@ -414,6 +415,7 @@ CONTAINS
       cdft_control%type = outer_scf_none
       cdft_control%need_pot = .TRUE.
       cdft_control%save_pot = .FALSE.
+      cdft_control%calc_pot = .FALSE.
       cdft_control%transfer_pot = .FALSE.
       cdft_control%atomic_charges = .FALSE.
       cdft_control%first_iteration = .TRUE.
