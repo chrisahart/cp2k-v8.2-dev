@@ -500,6 +500,7 @@ CONTAINS
          END IF
          ! the sign accounts for the charge of the electrons
          energy%ee = -ee_ener
+         IF (para_env%ionode)  PRINT *, "energy%ee", energy%ee
       END IF
 
       ! Adds the QM/MM potential

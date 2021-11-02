@@ -1589,6 +1589,8 @@ CONTAINS
         IF (para_env%ionode) PRINT *, "Finished calcuating forces", t1-t2
         IF (para_env%ionode)  PRINT *, "cdft_control%pot(:)", cdft_control%pot(:)
 
+        ! Note that energy due to external potential is calculated in qs_ks_methods.F
+
           DEALLOCATE (strength)
           DEALLOCATE (atom_of_kind)
           DEALLOCATE (kind_of)
