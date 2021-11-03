@@ -1275,6 +1275,7 @@ CONTAINS
       ENDIF
 
       nspins = dft_control%nspins
+      CALL get_qs_env(qs_env, nkind=nkind, para_env=para_env)
 
       ! sum up potentials and integrate
       IF (ASSOCIATED(v_rspace_new)) THEN
@@ -1403,7 +1404,7 @@ CONTAINS
             ENDIF
             IF (lrigpw) THEN
                lri_v_int => lri_density%lri_coefs(ispin)%lri_kinds
-               CALL get_qs_env(qs_env, nkind=nkind, para_env=para_env)
+               ! CALL get_qs_env(qs_env, nkind=nkind, para_env=para_env)
                DO ikind = 1, nkind
                   lri_v_int(ikind)%v_int = 0.0_dp
                END DO
