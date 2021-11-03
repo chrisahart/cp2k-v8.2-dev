@@ -4802,7 +4802,7 @@ CONTAINS
                           description="Calculate CDFT potential energy. "// &
                           "Should be included for conservation of energy.", &
                           usage="CALC_CDFT_POT", &
-                          default_l_val=.TRUE., lone_keyword_l_val=.TRUE.)
+                          default_l_val=.FALSE., lone_keyword_l_val=.FALSE.)
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
 
