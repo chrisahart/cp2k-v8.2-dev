@@ -1321,6 +1321,8 @@ CONTAINS
             ! CDFT constraint contribution
             IF (dft_control%qs_control%cdft) THEN
               IF (dft_control%qs_control%cdft_control%calc_cdft_pot) THEN
+                IF (para_env%ionode) PRINT *, "Adding CDFT potential energy to total energy"
+                IF (para_env%ionode) PRINT *, dft_control%qs_control%cdft_control%calc_cdft_pot
                DO igroup = 1, SIZE(cdft_control%group)
                   SELECT CASE (cdft_control%group(igroup)%constraint_type)
                   CASE (cdft_charge_constraint)
