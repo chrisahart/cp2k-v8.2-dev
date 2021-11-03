@@ -1322,6 +1322,7 @@ CONTAINS
 
             ! CDFT constraint contribution
             IF (dft_control%qs_control%cdft) THEN
+              cdft_control%calc_cdft_pot = .FALSE.
               IF (para_env%ionode) PRINT *, "Adding CDFT potential energy to total energy"
               IF (para_env%ionode) PRINT *, cdft_control%calc_cdft_pot
               IF (cdft_control%calc_cdft_pot) THEN
