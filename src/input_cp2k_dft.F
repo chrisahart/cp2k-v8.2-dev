@@ -4798,10 +4798,10 @@ CONTAINS
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
 
-      CALL keyword_create(keyword, __LOCATION__, name="CALC_POT", &
+      CALL keyword_create(keyword, __LOCATION__, name="CALC_CDFT_POT", &
                           description="Calculate CDFT potential energy. "// &
                           "Should be included for conservation of energy.", &
-                          usage="CALC_POT", &
+                          usage="CALC_CDFT_POT", &
                           default_l_val=.TRUE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
