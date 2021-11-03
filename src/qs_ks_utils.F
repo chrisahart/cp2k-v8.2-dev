@@ -1318,11 +1318,12 @@ CONTAINS
                                                 +v_spin_ddapc_rest_r%pw%cr3d
                END IF
             END IF
+
             ! CDFT constraint contribution
             IF (dft_control%qs_control%cdft) THEN
-              IF (dft_control%qs_control%cdft_control%calc_cdft_pot) THEN
-                IF (para_env%ionode) PRINT *, "Adding CDFT potential energy to total energy"
-                IF (para_env%ionode) PRINT *, dft_control%qs_control%cdft_control%calc_cdft_pot
+              IF (para_env%ionode) PRINT *, "Adding CDFT potential energy to total energy"
+              IF (para_env%ionode) PRINT *, cdft_control%calc_cdft_pot
+              IF (cdft_control%calc_cdft_pot) THEN
                DO igroup = 1, SIZE(cdft_control%group)
                   SELECT CASE (cdft_control%group(igroup)%constraint_type)
                   CASE (cdft_charge_constraint)
