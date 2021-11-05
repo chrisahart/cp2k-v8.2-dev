@@ -415,7 +415,7 @@ CONTAINS
       cdft_control%type = outer_scf_none
       cdft_control%need_pot = .TRUE.
       cdft_control%save_pot = .FALSE.
-      ! cdft_control%calc_cdft_pot = .TRUE.
+      cdft_control%calc_cdft_pot = .TRUE.
       cdft_control%transfer_pot = .FALSE.
       cdft_control%atomic_charges = .FALSE.
       cdft_control%first_iteration = .TRUE.
