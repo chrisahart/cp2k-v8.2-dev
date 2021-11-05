@@ -4798,13 +4798,13 @@ CONTAINS
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
 
-      CALL keyword_create(keyword, __LOCATION__, name="CALC_CDFT_POT", &
-                          description="Calculate CDFT potential energy. "// &
-                          "Should be included for conservation of energy.", &
-                          usage="CALC_CDFT_POT", &
-                          default_l_val=.FALSE., lone_keyword_l_val=.FALSE.)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
+      ! CALL keyword_create(keyword, __LOCATION__, name="CALC_CDFT_POT", &
+      !                     description="Calculate CDFT potential energy. "// &
+      !                     "Should be included for conservation of energy.", &
+      !                     usage="CALC_CDFT_POT", &
+      !                     default_l_val=.FALSE., lone_keyword_l_val=.FALSE.)
+      ! CALL section_add_keyword(section, keyword)
+      ! CALL keyword_release(keyword)
 
    END SUBROUTINE create_cdft_control_section
 
