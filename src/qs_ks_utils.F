@@ -1321,12 +1321,10 @@ CONTAINS
             END IF
 
             ! CDFT constraint contribution
-            ! cdft_control => dft_control%qs_control%cdft_control
             IF (dft_control%qs_control%cdft) THEN
-              ! cdft_control%calc_cdft_pot = .FALSE.
-              ! IF (para_env%ionode) PRINT *, "Adding CDFT potential energy to total energy"
-              ! IF (para_env%ionode) PRINT *, cdft_control%calc_cdft_pot
-              ! IF (cdft_control%calc_cdft_pot) THEN
+              IF (para_env%ionode) PRINT *, cdft_control%calc_cdft_pot
+              IF (cdft_control%calc_cdft_pot) THEN
+                IF (para_env%ionode) PRINT *, "Adding CDFT potential energy to total energy"
                DO igroup = 1, SIZE(cdft_control%group)
                   SELECT CASE (cdft_control%group(igroup)%constraint_type)
                   CASE (cdft_charge_constraint)
@@ -1351,7 +1349,7 @@ CONTAINS
                                                 cdft_control%strength(igroup)
                END DO
             END IF
-          ! END IF
+          END IF
             ! The efield contribution
             IF (dft_control%apply_efield_field) THEN
                v_rspace_new(ispin)%pw%cr3d = v_rspace_new(ispin)%pw%cr3d+ &

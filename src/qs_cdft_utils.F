@@ -635,8 +635,12 @@ CONTAINS
                               l_val=cdft_control%atomic_charges)
     CALL section_vals_val_get(cdft_control_section, "IN_MEMORY", &
                               l_val=cdft_control%in_memory)
-    CALL section_vals_val_get(cdft_control_section, "PRINT_FORCE", l_val=cdft_control%print_force)
-    CALL section_vals_val_get(cdft_control_section, "ENERGY_ONLY", l_val=cdft_control%energy_only)
+    CALL section_vals_val_get(cdft_control_section, "PRINT_FORCE", &
+                              l_val=cdft_control%print_force)
+    CALL section_vals_val_get(cdft_control_section, "CALC_CDFT_POT", &
+                              l_val=cdft_control%energy_only)
+    CALL section_vals_val_get(cdft_control_section, "ENERGY_ONLY", &
+                              l_val=cdft_control%calc_cdft_pot)
     CALL section_vals_val_get(cdft_control_section, "DEBUG", l_val=cdft_control%debug)
     ! Parse any dummy atoms (no constraint, just charges)
     IF (cdft_control%atomic_charges) THEN

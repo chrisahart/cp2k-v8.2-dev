@@ -4776,7 +4776,7 @@ CONTAINS
 
       CALL keyword_create(keyword, __LOCATION__, name="DEBUG", &
                           description="Enables additional printing. "// &
-                          "Useful for debugging.", &
+                          "May be useful for debugging.", &
                           usage="DEBUG", &
                           default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(section, keyword)
@@ -4784,7 +4784,7 @@ CONTAINS
 
       CALL keyword_create(keyword, __LOCATION__, name="PRINT_FORCE", &
                           description="Print force "// &
-                          "Useful for debugging.", &
+                          "May be useful for debugging.", &
                           usage="PRINT_FORCE", &
                           default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(section, keyword)
@@ -4792,19 +4792,19 @@ CONTAINS
 
       CALL keyword_create(keyword, __LOCATION__, name="ENERGY_ONLY", &
                           description="Do not calculate CDFT forces. "// &
-                          "Useful for debugging.", &
+                          "May be useful for debugging.", &
                           usage="ENERGY_ONLY", &
                           default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
 
-      ! CALL keyword_create(keyword, __LOCATION__, name="CALC_CDFT_POT", &
-      !                     description="Calculate CDFT potential energy. "// &
-      !                     "Should be included for conservation of energy.", &
-      !                     usage="CALC_CDFT_POT", &
-      !                     default_l_val=.FALSE., lone_keyword_l_val=.FALSE.)
-      ! CALL section_add_keyword(section, keyword)
-      ! CALL keyword_release(keyword)
+      CALL keyword_create(keyword, __LOCATION__, name="CALC_CDFT_POT", &
+                          description="Calculate CDFT potential energy. "// &
+                          "May be useful for debugging.", &
+                          usage="CALC_CDFT_POT", &
+                          default_l_val=.FALSE., lone_keyword_l_val=.FALSE.)
+      CALL section_add_keyword(section, keyword)
+      CALL keyword_release(keyword)
 
    END SUBROUTINE create_cdft_control_section
 
