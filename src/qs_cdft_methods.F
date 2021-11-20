@@ -1574,20 +1574,20 @@ CONTAINS
                 DO iatom = 1, natom
                   ikind = kind_of(iatom)
                   i = atom_of_kind(iatom)
-                   PRINT *, "cdft_constraint_force"
-                   PRINT *, "iatom i", iatom, i
-                   PRINT *, "group(igroup)%integrated(:, iatom)", group(igroup)%integrated(:, iatom)
-                   PRINT *, "group(igroup)%integrated(:, iatom)*strength(igroup)", group(igroup)%integrated(:, iatom)*strength(igroup)
-                   PRINT *, "force(ikind)%rho_elec(:, i)", force(ikind)%rho_elec(:, i)
-                   PRINT *, "force(ikind)%total(:, i) i", force(ikind)%total(:, i)
+                PRINT *, "cdft_constraint_force"
+                PRINT *, "iatom i", iatom, i
+                PRINT *, "group(igroup)%integrated(:, iatom)", group(igroup)%integrated(:, iatom)
+                PRINT *, "group(igroup)%integrated(:, iatom)*strength(igroup)", group(igroup)%integrated(:, iatom)*strength(igroup)
+                PRINT *, "force(ikind)%rho_elec(:, i)", force(ikind)%rho_elec(:, i)
+                PRINT *, "force(ikind)%total(:, i) i", force(ikind)%total(:, i)
                 END DO
              END DO
           END IF
         END IF
 
         t2 = m_walltime()
-        IF (para_env%ionode) PRINT *, "Finished calcuating forces", t1-t2
-        IF (para_env%ionode)  PRINT *, "cdft_control%pot(:)", cdft_control%pot(:)
+        ! IF (para_env%ionode) PRINT *, "Finished calcuating forces", t1-t2
+        ! IF (para_env%ionode)  PRINT *, "cdft_control%pot(:)", cdft_control%pot(:)
 
         ! Note that energy due to external potential is calculated in qs_ks_methods.F
 
