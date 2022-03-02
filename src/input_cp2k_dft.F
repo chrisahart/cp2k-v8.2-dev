@@ -4471,16 +4471,6 @@ CONTAINS
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
 
-      CALL keyword_create(keyword, __LOCATION__, name="IN_MEMORY", &
-                          description="Precompute gradients due to Becke constraint during"// &
-                          " initial formation of constraint and store them in memory. Useful"// &
-                          " in combination with confinement, memory intensive otherwise. Does"// &
-                          " nothing if forces are not calculated.", &
-                          usage="IN_MEMORY", &
-                          default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
    END SUBROUTINE create_becke_constraint_section
 
 ! **************************************************************************************************
@@ -4910,6 +4900,14 @@ CONTAINS
                           usage="ATOMIC_CUTOFF {real} ", default_r_val=1.0e-12_dp)
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
+
+            CALL keyword_create(keyword, __LOCATION__, name="ZERO_STRENGTH", &
+                                description="overrides SCF EXTRAOPOLATION_ORDER"// &
+                                " setting CDFT strength to zero each SCF.", &
+                                usage="ZERO_STRENGTH", &
+                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
+            CALL section_add_keyword(section, keyword)
+            CALL keyword_release(keyword)
 
    END SUBROUTINE create_hirshfeld_constraint_section
 

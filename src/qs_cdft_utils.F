@@ -852,6 +852,7 @@ CONTAINS
     CALL section_vals_val_get(hirshfeld_section, "PRINT_DENSITY", l_val=hirshfeld_control%print_density)
     CALL section_vals_val_get(hirshfeld_section, "EPS_CUTOFF", r_val=hirshfeld_control%eps_cutoff)
     CALL section_vals_val_get(hirshfeld_section, "ATOMIC_CUTOFF", r_val=hirshfeld_control%atomic_cutoff)
+    CALL section_vals_val_get(hirshfeld_section, "ZERO_STRENGTH", l_val=cdft_control%zero_strength)
     IF (.NOT. hirshfeld_control%use_bohr) THEN
        hirshfeld_control%radius = cp_unit_from_cp2k(hirshfeld_control%radius, "angstrom")
     END IF

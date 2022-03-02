@@ -104,10 +104,12 @@ MODULE qs_cdft_types
 !> \param print_density    logical to decide if Hirshfeld densities should be printed
 !> \param use_atomic_cutoff    logical to decide if cutoff for Hirshfeld constraint atomic density
 !> \param hirshfeld_env   auxiliary type storing information about the Gaussians
+!> \param zero_strength   overrides SCF EXTRAOPOLATION_ORDER, setting CDFT strength to zero each SCF
 ! **************************************************************************************************
    TYPE hirshfeld_constraint_type
       INTEGER                              :: gaussian_shape, shape_function, atoms_memory
-      LOGICAL                              :: use_bohr, print_density, use_atomic_cutoff
+      LOGICAL                              :: use_bohr, print_density, &
+                                              use_atomic_cutoff, zero_strength
       REAL(KIND=dp)                        :: radius, eps_cutoff, atomic_cutoff
       REAL(KIND=dp), DIMENSION(:), POINTER :: radii
       TYPE(hirshfeld_type), POINTER        :: hirshfeld_env
@@ -633,6 +635,7 @@ CONTAINS
       hirshfeld_control%use_bohr = .FALSE.
       hirshfeld_control%print_density = .FALSE.
       hirshfeld_control%use_atomic_cutoff = .TRUE.
+      hirshfeld_control%zero_strength = .FALSE.
       hirshfeld_control%radius = 3.0_dp
       hirshfeld_control%eps_cutoff = 1.0e-12_dp
       hirshfeld_control%atomic_cutoff = 1.0e-12_dp
