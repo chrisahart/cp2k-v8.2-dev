@@ -756,6 +756,10 @@ CONTAINS
       ALLOCATE (coefficients(natom))
       ALLOCATE (is_constraint(natom))
 
+      ! Set strength to zero
+      ! IF (cdft_control%in_memory) cdft_control%strength(:) = 0.0_dp
+      cdft_control%strength(:) = 0.0_dp
+
       ! Neccessary for collocate_pgf_product
       subpatch_pattern = 0
       eps_rho_rspace = dft_control%qs_control%eps_rho_rspace
