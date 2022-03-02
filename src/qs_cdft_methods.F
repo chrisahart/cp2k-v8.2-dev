@@ -759,6 +759,12 @@ CONTAINS
       ! Set strength to zero if requested
        IF (hirshfeld_control%zero_strength) cdft_control%strength(:) = 0.0_dp
 
+       ! Override strength if requested
+       IF (hirshfeld_control%override_strength) THEN
+        IF (ABS(cdft_control%strength(1)) > 0.0_dp) cdft_control%strength(1) = hirshfeld_control%set_strength
+      END IF
+
+
       ! Neccessary for collocate_pgf_product
       subpatch_pattern = 0
       eps_rho_rspace = dft_control%qs_control%eps_rho_rspace

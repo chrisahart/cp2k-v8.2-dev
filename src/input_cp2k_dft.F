@@ -4909,6 +4909,20 @@ CONTAINS
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
+            CALL keyword_create(keyword, __LOCATION__, name="OVERRIDE_STRENGTH ", &
+                                description="Set strength to SET_STRENGTH "// &
+                                "useful to override SCF.", &
+                                usage="OVERRIDE_STRENGTH", &
+                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
+            CALL section_add_keyword(section, keyword)
+            CALL keyword_release(keyword)
+
+            CALL keyword_create(keyword, __LOCATION__, name="SET_STRENGTH ", &
+                                description="Set strength.", &
+                                usage="SET_STRENGTH {real} ", default_r_val=0.0_dp)
+            CALL section_add_keyword(section, keyword)
+            CALL keyword_release(keyword)
+
    END SUBROUTINE create_hirshfeld_constraint_section
 
 ! **************************************************************************************************
