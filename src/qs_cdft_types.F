@@ -107,14 +107,16 @@ MODULE qs_cdft_types
 !> \param zero_strength   overrides SCF EXTRAOPOLATION_ORDER, setting CDFT strength to zero each SCF
 !> \param override_strength
 !> \param set_strength
+!> \param target_truncate
 !> \param scale_strength
+!> \param target_truncate_value
 ! **************************************************************************************************
    TYPE hirshfeld_constraint_type
       INTEGER                              :: gaussian_shape, shape_function, atoms_memory
       LOGICAL                              :: use_bohr, print_density, override_strength, &
-                                              use_atomic_cutoff, zero_strength
+                                              use_atomic_cutoff, zero_strength, target_truncate
       REAL(KIND=dp)                        :: radius, eps_cutoff, atomic_cutoff, &
-                                              set_strength, scale_strength
+                                              set_strength, scale_strength, target_truncate_value
       REAL(KIND=dp), DIMENSION(:), POINTER :: radii
       TYPE(hirshfeld_type), POINTER        :: hirshfeld_env
    END TYPE hirshfeld_constraint_type
@@ -641,8 +643,10 @@ CONTAINS
       hirshfeld_control%use_atomic_cutoff = .TRUE.
       hirshfeld_control%zero_strength = .FALSE.
       hirshfeld_control%override_strength = .FALSE.
+      hirshfeld_control%target_truncate = .FALSE.
       hirshfeld_control%radius = 3.0_dp
       hirshfeld_control%set_strength = 0.0_dp
+      hirshfeld_control%target_truncate_value = 0.0_dp
       hirshfeld_control%scale_strength = 0.0_dp
       hirshfeld_control%eps_cutoff = 1.0e-12_dp
       hirshfeld_control%atomic_cutoff = 1.0e-12_dp

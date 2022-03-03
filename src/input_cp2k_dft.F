@@ -4929,6 +4929,20 @@ CONTAINS
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
+            CALL keyword_create(keyword, __LOCATION__, name="TARGET_TRUNCATE ", &
+                                description="TARGET_TRUNCATE "// &
+                                "useful to override SCF.", &
+                                usage="TARGET_TRUNCATE", &
+                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
+            CALL section_add_keyword(section, keyword)
+            CALL keyword_release(keyword)
+
+            CALL keyword_create(keyword, __LOCATION__, name="TARGET_TRUNCATE_VAL ", &
+                                description="TARGET_TRUNCATE_VAL.", &
+                                usage="TARGET_TRUNCATE_VAL {real} ", default_r_val=0.0_dp)
+            CALL section_add_keyword(section, keyword)
+            CALL keyword_release(keyword)
+
    END SUBROUTINE create_hirshfeld_constraint_section
 
 ! **************************************************************************************************
