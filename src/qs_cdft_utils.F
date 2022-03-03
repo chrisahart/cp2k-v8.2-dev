@@ -858,9 +858,10 @@ CONTAINS
     CALL section_vals_val_get(hirshfeld_section, "SET_STRENGTH_VALUE", r_val=hirshfeld_control%set_strength_value)
     CALL section_vals_val_get(hirshfeld_section, "SCALE_STRENGTH", l_val=hirshfeld_control%scale_strength)
     CALL section_vals_val_get(hirshfeld_section, "SCALE_STRENGTH_VALUE", r_val=hirshfeld_control%scale_strength_value)
-    CALL section_vals_val_get(hirshfeld_section, "TARGET_TRUNCATE", l_val=hirshfeld_control%target_truncate)
+    CALL section_vals_val_get(hirshfeld_section, "TARGET_TRUNCATE_MAX", l_val=hirshfeld_control%target_truncate_max)
+    CALL section_vals_val_get(hirshfeld_section, "TARGET_TRUNCATE_MIN", l_val=hirshfeld_control%target_truncate_min)
     CALL section_vals_val_get(hirshfeld_section, "TARGET_TRUNCATE_VALUE", r_val=hirshfeld_control%target_truncate_value)
-    
+
     IF (.NOT. hirshfeld_control%use_bohr) THEN
        hirshfeld_control%radius = cp_unit_from_cp2k(hirshfeld_control%radius, "angstrom")
     END IF

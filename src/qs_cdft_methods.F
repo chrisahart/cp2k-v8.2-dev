@@ -1684,21 +1684,28 @@ CONTAINS
        END IF
 
        ! Scale strength if requested
-       IF (hirshfeld_control%scale_strength) THEN
-        cdft_control%strength(1) = cdft_control%strength(1) / hirshfeld_control%scale_strength_value
+       IF (cdft_control%hirshfeld_control%scale_strength) THEN
+        cdft_control%strength(1) = cdft_control%strength(1) / cdft_control%hirshfeld_control%scale_strength_value
       END IF
 
-       ! Override strength if requested (if finite strength, set to hirshfeld_control%set_strength_value)
-       IF (hirshfeld_control%set_strength) THEN
-        IF (ABS(cdft_control%strength(1)) > 0.0_dp) cdft_control%strength(1) = hirshfeld_control%set_strength_value
+       ! Override strength if requested (if finite strength, set to cdft_control%hirshfeld_control%set_strength_value)
+       IF (cdft_control%hirshfeld_control%set_strength) THEN
+        IF (ABS(cdft_control%strength(1)) > 0.0_dp) THEN
+          cdft_control%strength(1) = cdft_control%hirshfeld_control%set_strength_value
+        END IF 
       END IF
 
       ! If target is smaller than target_truncate_value, set strength to zero (useful to override EPS_SCF)
-      IF (hirshfeld_control%target_truncate) THEN
-        IF (ABS(target_val(1)) < hirshfeld_control%target_truncate_value) THEN
+      IF (cdft_control%hirshfeld_control%target_truncate_max) THEN
+        IF (ABS(target_val(1)) > cdft_control%hirshfeld_control%target_truncate_value) THEN
            cdft_control%strength(1) = 0.0_dp
        END IF
      END IF
+     IF (cdft_control%hirshfeld_control%target_truncate_min) THEN
+       IF (ABS(target_val(1)) < cdft_control%hirshfeld_control%target_truncate_value) THEN
+          cdft_control%strength(1) = 0.0_dp
+      END IF
+    END IF
 
       ! Loop over number of spins, number of atoms in constraint group
        DO i = 1, dft_control%nspins

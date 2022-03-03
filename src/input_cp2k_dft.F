@@ -4937,10 +4937,18 @@ CONTAINS
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
-            CALL keyword_create(keyword, __LOCATION__, name="TARGET_TRUNCATE ", &
-                                description="TARGET_TRUNCATE "// &
+            CALL keyword_create(keyword, __LOCATION__, name="TARGET_TRUNCATE_MAX", &
+                                description="TARGET_TRUNCATE_MAX "// &
                                 "useful to override SCF.", &
-                                usage="TARGET_TRUNCATE", &
+                                usage="TARGET_TRUNCATE_MAX", &
+                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
+            CALL section_add_keyword(section, keyword)
+            CALL keyword_release(keyword)
+
+            CALL keyword_create(keyword, __LOCATION__, name="TARGET_TRUNCATE_MIN", &
+                                description="TARGET_TRUNCATE_MIN "// &
+                                "useful to override SCF.", &
+                                usage="TARGET_TRUNCATE_MIN", &
                                 default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
