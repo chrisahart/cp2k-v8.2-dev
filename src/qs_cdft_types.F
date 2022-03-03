@@ -645,12 +645,13 @@ CONTAINS
       hirshfeld_control%print_density = .FALSE.
       hirshfeld_control%use_atomic_cutoff = .TRUE.
       hirshfeld_control%zero_strength = .FALSE.
-      hirshfeld_control%override_strength = .FALSE.
+      hirshfeld_control%set_strength = .FALSE.
+      hirshfeld_control%scale_strength = .FALSE.
       hirshfeld_control%target_truncate = .FALSE.
       hirshfeld_control%radius = 3.0_dp
-      hirshfeld_control%set_strength = 0.0_dp
+      hirshfeld_control%set_strength_value = 0.0_dp
+      hirshfeld_control%scale_strength_value = 0.0_dp
       hirshfeld_control%target_truncate_value = 0.0_dp
-      hirshfeld_control%scale_strength = 0.0_dp
       hirshfeld_control%eps_cutoff = 1.0e-12_dp
       hirshfeld_control%atomic_cutoff = 1.0e-12_dp
       hirshfeld_control%shape_function = shape_function_gaussian
