@@ -759,16 +759,6 @@ CONTAINS
       ! Reset strength to zero each SCF loop if requested (no extrapolation)
        IF (hirshfeld_control%zero_strength) cdft_control%strength(:) = 0.0_dp
 
-       ! Scale strength if requested
-       IF (hirshfeld_control%scale_strength) THEN
-        cdft_control%strength(1) = cdft_control%strength(1) / hirshfeld_control%scale_strength
-      END IF
-
-       ! Override strength if requested
-       IF (hirshfeld_control%override_strength) THEN
-        IF (ABS(cdft_control%strength(1)) > 0.0_dp) cdft_control%strength(1) = hirshfeld_control%set_strength
-      END IF
-
       ! Neccessary for collocate_pgf_product
       subpatch_pattern = 0
       eps_rho_rspace = dft_control%qs_control%eps_rho_rspace
@@ -1699,8 +1689,8 @@ CONTAINS
       END IF
 
        ! Override strength if requested (if finite strength, set to hirshfeld_control%set_strength)
-       IF (hirshfeld_control%override_strength) THEN
-        IF (ABS(cdft_control%strength(1)) > 0.0_dp) cdft_control%strength(1) = hirshfeld_control%override_strength_value
+       IF (hirshfeld_control%set_strength) THEN
+        IF (ABS(cdft_control%strength(1)) > 0.0_dp) cdft_control%strength(1) = hirshfeld_control%set_strength_value
       END IF
 
       ! If target is smaller than truncate, set strength to zero (useful to override EPS_SCF)
