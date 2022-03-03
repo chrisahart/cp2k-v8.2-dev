@@ -4909,23 +4909,31 @@ CONTAINS
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
-            CALL keyword_create(keyword, __LOCATION__, name="OVERRIDE_STRENGTH ", &
+            CALL keyword_create(keyword, __LOCATION__, name="SET_STRENGTH ", &
                                 description="Set strength to SET_STRENGTH "// &
                                 "useful to override SCF.", &
-                                usage="OVERRIDE_STRENGTH", &
+                                usage="SET_STRENGTH", &
                                 default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
-            CALL keyword_create(keyword, __LOCATION__, name="SET_STRENGTH ", &
+            CALL keyword_create(keyword, __LOCATION__, name="SET_STRENGTH_VALUE", &
                                 description="Set strength.", &
                                 usage="SET_STRENGTH {real} ", default_r_val=0.0_dp)
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
-            CALL keyword_create(keyword, __LOCATION__, name="SCALE_STRENGTH ", &
-                                description="Scale strength.", &
-                                usage="SCALE_STRENGTH {real} ", default_r_val=0.0_dp)
+            CALL keyword_create(keyword, __LOCATION__, name="SCALE_STRENGTH", &
+                                description="SCALE_STRENGTH "// &
+                                "useful to override SCF.", &
+                                usage="SCALE_STRENGTH", &
+                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
+            CALL section_add_keyword(section, keyword)
+            CALL keyword_release(keyword)
+
+            CALL keyword_create(keyword, __LOCATION__, name="SCALE_STRENGTH_VALUE", &
+                                description="SCALE_STRENGTH_VALUE.", &
+                                usage="SCALE_STRENGTH_VALUE {real} ", default_r_val=0.0_dp)
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
@@ -4937,9 +4945,9 @@ CONTAINS
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
-            CALL keyword_create(keyword, __LOCATION__, name="TARGET_TRUNCATE_VAL ", &
-                                description="TARGET_TRUNCATE_VAL.", &
-                                usage="TARGET_TRUNCATE_VAL {real} ", default_r_val=0.0_dp)
+            CALL keyword_create(keyword, __LOCATION__, name="TARGET_TRUNCATE_VALUE", &
+                                description="TARGET_TRUNCATE_VALUE.", &
+                                usage="TARGET_TRUNCATE_VALUE {real} ", default_r_val=0.0_dp)
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 

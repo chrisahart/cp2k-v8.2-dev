@@ -1695,12 +1695,12 @@ CONTAINS
 
        ! Scale strength if requested
        IF (hirshfeld_control%scale_strength) THEN
-        cdft_control%strength(1) = cdft_control%strength(1) / hirshfeld_control%scale_strength
+        cdft_control%strength(1) = cdft_control%strength(1) / hirshfeld_control%scale_strength_value
       END IF
 
        ! Override strength if requested (if finite strength, set to hirshfeld_control%set_strength)
        IF (hirshfeld_control%override_strength) THEN
-        IF (ABS(cdft_control%strength(1)) > 0.0_dp) cdft_control%strength(1) = hirshfeld_control%set_strength
+        IF (ABS(cdft_control%strength(1)) > 0.0_dp) cdft_control%strength(1) = hirshfeld_control%override_strength_value
       END IF
 
       ! If target is smaller than truncate, set strength to zero (useful to override EPS_SCF)
