@@ -1683,26 +1683,28 @@ CONTAINS
           electronic_charge = 0.0_dp
        END IF
 
-       ! Scale strength if requested
+       ! Scale strength if requested (useful to override SCF)
        IF (cdft_control%hirshfeld_control%scale_strength) THEN
-        cdft_control%strength(1) = cdft_control%strength(1) / cdft_control%hirshfeld_control%scale_strength_value
+        cdft_control%strength(1) = cdft_control%strength(1) * cdft_control%hirshfeld_control%scale_strength_value
       END IF
 
-       ! Override strength if requested (if finite strength, set to cdft_control%hirshfeld_control%set_strength_value)
+       ! Iif finite strength set to cdft_control%hirshfeld_control%set_strength_value (useful to override SCF)
        IF (cdft_control%hirshfeld_control%set_strength) THEN
         IF (ABS(cdft_control%strength(1)) > 0.0_dp) THEN
           cdft_control%strength(1) = cdft_control%hirshfeld_control%set_strength_value
         END IF
       END IF
 
-      ! If target is smaller than target_truncate_value, set strength to zero (useful to override EPS_SCF)
+      ! If cdft_control%value is larger than target_truncate_value set strength to zero (useful to override SCF)
       IF (cdft_control%hirshfeld_control%target_truncate_max) THEN
-        IF (target_val(1) > cdft_control%hirshfeld_control%target_truncate_value) THEN
+        IF (cdft_control%value(1) > cdft_control%hirshfeld_control%target_truncate_value) THEN
            cdft_control%strength(1) = 0.0_dp
        END IF
      END IF
+
+     ! If cdft_control%value is smaller than target_truncate_value, set strength to zero (useful to override SCF)
      IF (cdft_control%hirshfeld_control%target_truncate_min) THEN
-       IF (target_val(1) < cdft_control%hirshfeld_control%target_truncate_value) THEN
+       IF (cdft_control%value(1) < cdft_control%hirshfeld_control%target_truncate_value) THEN
           cdft_control%strength(1) = 0.0_dp
       END IF
     END IF
