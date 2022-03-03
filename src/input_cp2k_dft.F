@@ -4923,6 +4923,12 @@ CONTAINS
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
+            CALL keyword_create(keyword, __LOCATION__, name="SCALE_STRENGTH ", &
+                                description="Scale strength.", &
+                                usage="SCALE_STRENGTH {real} ", default_r_val=0.0_dp)
+            CALL section_add_keyword(section, keyword)
+            CALL keyword_release(keyword)
+
    END SUBROUTINE create_hirshfeld_constraint_section
 
 ! **************************************************************************************************

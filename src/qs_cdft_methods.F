@@ -756,14 +756,18 @@ CONTAINS
       ALLOCATE (coefficients(natom))
       ALLOCATE (is_constraint(natom))
 
-      ! Set strength to zero if requested
+      ! Reset strength to zero each SCF loop if requested (no extrapolation)
        IF (hirshfeld_control%zero_strength) cdft_control%strength(:) = 0.0_dp
+
+       ! Scale strength if requested
+       IF (hirshfeld_control%scale_strength) THEN
+        cdft_control%strength(1) = cdft_control%strength(1) / hirshfeld_control%scale_strength
+      END IF
 
        ! Override strength if requested
        IF (hirshfeld_control%override_strength) THEN
         IF (ABS(cdft_control%strength(1)) > 0.0_dp) cdft_control%strength(1) = hirshfeld_control%set_strength
       END IF
-
 
       ! Neccessary for collocate_pgf_product
       subpatch_pattern = 0
@@ -1688,6 +1692,16 @@ CONTAINS
           ALLOCATE (electronic_charge(cdft_control%natoms, dft_control%nspins))
           electronic_charge = 0.0_dp
        END IF
+
+       ! Scale strength if requested
+       IF (hirshfeld_control%scale_strength) THEN
+        cdft_control%strength(1) = cdft_control%strength(1) / hirshfeld_control%scale_strength
+      END IF
+
+       ! Override strength if requested
+       IF (hirshfeld_control%override_strength) THEN
+        IF (ABS(cdft_control%strength(1)) > 0.0_dp) cdft_control%strength(1) = hirshfeld_control%set_strength
+      END IF
 
       ! Loop over number of spins, number of atoms in constraint group
        DO i = 1, dft_control%nspins
