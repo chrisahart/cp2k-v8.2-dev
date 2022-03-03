@@ -1703,7 +1703,7 @@ CONTAINS
         IF (ABS(cdft_control%strength(1)) > 0.0_dp) cdft_control%strength(1) = hirshfeld_control%set_strength
       END IF
 
-      ! Override strength if requested (if finite strength, set to hirshfeld_control%set_strength)
+      ! If target is smaller than truncate, set strength to zero (useful to override EPS_SCF)
       IF (hirshfeld_control%target_truncate) THEN
         IF ( ABS(target_val(1)) < hirshfeld_control%target_truncate_value) THEN
            cdft_control%strength(1) = 0.0_dp
