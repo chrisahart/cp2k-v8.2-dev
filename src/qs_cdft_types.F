@@ -112,7 +112,7 @@ MODULE qs_cdft_types
       INTEGER                              :: gaussian_shape, shape_function, atoms_memory
       LOGICAL                              :: use_bohr, print_density, override_strength &
                                               use_atomic_cutoff, zero_strength
-      REAL(KIND=dp)                        :: radius, eps_cutoff, atomic_cutoff, override_strength
+      REAL(KIND=dp)                        :: radius, eps_cutoff, atomic_cutoff, set_strength
       REAL(KIND=dp), DIMENSION(:), POINTER :: radii
       TYPE(hirshfeld_type), POINTER        :: hirshfeld_env
    END TYPE hirshfeld_constraint_type
