@@ -1692,17 +1692,17 @@ CONTAINS
        IF (cdft_control%hirshfeld_control%set_strength) THEN
         IF (ABS(cdft_control%strength(1)) > 0.0_dp) THEN
           cdft_control%strength(1) = cdft_control%hirshfeld_control%set_strength_value
-        END IF 
+        END IF
       END IF
 
       ! If target is smaller than target_truncate_value, set strength to zero (useful to override EPS_SCF)
       IF (cdft_control%hirshfeld_control%target_truncate_max) THEN
-        IF (ABS(target_val(1)) > cdft_control%hirshfeld_control%target_truncate_value) THEN
+        IF (target_val(1) > cdft_control%hirshfeld_control%target_truncate_value) THEN
            cdft_control%strength(1) = 0.0_dp
        END IF
      END IF
      IF (cdft_control%hirshfeld_control%target_truncate_min) THEN
-       IF (ABS(target_val(1)) < cdft_control%hirshfeld_control%target_truncate_value) THEN
+       IF (target_val(1) < cdft_control%hirshfeld_control%target_truncate_value) THEN
           cdft_control%strength(1) = 0.0_dp
       END IF
     END IF
