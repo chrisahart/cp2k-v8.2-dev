@@ -4909,8 +4909,8 @@ CONTAINS
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
-            CALL keyword_create(keyword, __LOCATION__, name="SET_STRENGTH ", &
-                                description="Set strength to SET_STRENGTH "// &
+            CALL keyword_create(keyword, __LOCATION__, name="SET_STRENGTH", &
+                                description="Set strength to SET_STRENGTH"// &
                                 "useful to override SCF.", &
                                 usage="SET_STRENGTH", &
                                 default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
@@ -4924,7 +4924,7 @@ CONTAINS
             CALL keyword_release(keyword)
 
             CALL keyword_create(keyword, __LOCATION__, name="SCALE_STRENGTH", &
-                                description="SCALE_STRENGTH "// &
+                                description="SCALE_STRENGTH"// &
                                 "useful to override SCF.", &
                                 usage="SCALE_STRENGTH", &
                                 default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
