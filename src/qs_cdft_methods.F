@@ -1822,18 +1822,6 @@ CONTAINS
           DEALLOCATE (gapw_offset)
        END IF ! GAPW
 
-       ! Scale strength if requested (useful to override SCF)
-       IF (cdft_control%hirshfeld_control%scale_strength) THEN
-        cdft_control%strength(1) = cdft_control%strength(1) * cdft_control%hirshfeld_control%scale_strength_value
-      END IF
-
-      ! If finite strength set to cdft_control%hirshfeld_control%set_strength_value (useful to override SCF)
-      IF (cdft_control%hirshfeld_control%set_strength) THEN
-       IF (ABS(cdft_control%strength(1)) > 0.0_dp) THEN
-         cdft_control%strength(1) = cdft_control%hirshfeld_control%set_strength_value
-       END IF
-     END IF
-
        ! Update constraint value and energy
        cdft_control%value(:) = dE(:)
        energy%cdft = 0.0_dp
@@ -1841,6 +1829,20 @@ CONTAINS
           energy%cdft = energy%cdft + (dE(ivar) - target_val(ivar))*strength(ivar)
           ! IF (para_env%ionode) PRINT *, "energy%cdft", energy%cdft
        END DO
+
+       ! Scale strength if requested (useful to override SCF)
+       IF (cdft_control%hirshfeld_control%scale_strength) THEN
+        cdft_control%strength(1) = cdft_control%strength(1) * cdft_control%hirshfeld_control%scale_strength_value
+        energy%cdft = 0.0_dp
+      END IF
+
+      ! If finite strength set to cdft_control%hirshfeld_control%set_strength_value (useful to override SCF)
+      IF (cdft_control%hirshfeld_control%set_strength) THEN
+       IF (ABS(cdft_control%strength(1)) > 0.0_dp) THEN
+         cdft_control%strength(1) = cdft_control%hirshfeld_control%set_strength_value
+         energy%cdft = 0.0_dp
+       END IF
+     END IF
 
       ! If cdft_control%value is larger than target_truncate_value set strength to zero (useful to override SCF)
       IF (cdft_control%hirshfeld_control%target_truncate_max) THEN
