@@ -1830,23 +1830,25 @@ CONTAINS
           ! IF (para_env%ionode) PRINT *, "energy%cdft", energy%cdft
        END DO
 
-       ! Scale strength if requested (useful to override SCF)
-       IF (cdft_control%hirshfeld_control%scale_strength) THEN
-        cdft_control%strength(1) = cdft_control%strength(1) * cdft_control%hirshfeld_control%scale_strength_value
-        energy%cdft = 0.0_dp
+       ! If cdft_control%strength > 0 set to zero (useful to override SCF)
+       IF (cdft_control%hirshfeld_control%strength_positive_truncate) THEN
+         IF (cdft_control%strength(1) > 0
+            cdft_control%strength(1) = 0.0_dp
+            energy%cdft = 0.0_dp
+        END IF
       END IF
 
-      ! If finite strength set to cdft_control%hirshfeld_control%set_strength_value (useful to override SCF)
-      IF (cdft_control%hirshfeld_control%set_strength) THEN
-       IF (ABS(cdft_control%strength(1)) > 0.0_dp) THEN
-         cdft_control%strength(1) = cdft_control%hirshfeld_control%set_strength_value
-         energy%cdft = 0.0_dp
+      ! If cdft_control%strength < 0 set to zero (useful to override SCF)
+      IF (cdft_control%hirshfeld_control%strength_negative_truncate) THEN
+        IF (cdft_control%strength(1) < 0
+           cdft_control%strength(1) = 0.0_dp
+           energy%cdft = 0.0_dp
        END IF
      END IF
 
       ! If cdft_control%value is larger than target_truncate_value set strength to zero (useful to override SCF)
       IF (cdft_control%hirshfeld_control%target_truncate_max) THEN
-        IF (cdft_control%value(1) > cdft_control%hirshfeld_control%target_truncate_value) THEN
+        IF (dE(1) > cdft_control%hirshfeld_control%target_truncate_value) THEN
            cdft_control%strength(1) = 0.0_dp
            energy%cdft = 0.0_dp
        END IF
@@ -1854,11 +1856,25 @@ CONTAINS
 
      ! If cdft_control%value is smaller than target_truncate_value, set strength to zero (useful to override SCF)
      IF (cdft_control%hirshfeld_control%target_truncate_min) THEN
-       IF (cdft_control%value(1) < cdft_control%hirshfeld_control%target_truncate_value) THEN
+       IF (dE(1)< cdft_control%hirshfeld_control%target_truncate_value) THEN
           cdft_control%strength(1) = 0.0_dp
           energy%cdft = 0.0_dp
       END IF
     END IF
+
+    ! If finite strength set to cdft_control%hirshfeld_control%set_strength_value (useful to override SCF)
+    IF (cdft_control%hirshfeld_control%set_strength) THEN
+     IF (ABS(cdft_control%strength(1)) > 0.0_dp) THEN
+       cdft_control%strength(1) = cdft_control%hirshfeld_control%set_strength_value
+       energy%cdft = 0.0_dp
+     END IF
+   END IF
+
+   ! Scale strength if requested (useful to override SCF)
+   IF (cdft_control%hirshfeld_control%scale_strength) THEN
+    cdft_control%strength(1) = cdft_control%strength(1) * cdft_control%hirshfeld_control%scale_strength_value
+    energy%cdft = 0.0_dp
+  END IF
 
        ! Calculate constraint potential energy V int dr w(r) rho(r)
        DO ivar = 1, nvar

@@ -4959,6 +4959,22 @@ CONTAINS
             CALL section_add_keyword(section, keyword)
             CALL keyword_release(keyword)
 
+            CALL keyword_create(keyword, __LOCATION__, name="STRENGTH_POSITIVE_TRUNCATE", &
+                                description="STRENGTH_POSITIVE_TRUNCATE"// &
+                                "useful to override SCF.", &
+                                usage="STRENGTH_POSITIVE_TRUNCATE", &
+                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
+            CALL section_add_keyword(section, keyword)
+            CALL keyword_release(keyword)
+
+            CALL keyword_create(keyword, __LOCATION__, name="STRENGTH_NEGATIVE_TRUNCATE", &
+                                description="STRENGTH_NEGATIVE_TRUNCATE"// &
+                                "useful to override SCF.", &
+                                usage="STRENGTH_NEGATIVE_TRUNCATE", &
+                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
+            CALL section_add_keyword(section, keyword)
+            CALL keyword_release(keyword)
+
    END SUBROUTINE create_hirshfeld_constraint_section
 
 ! **************************************************************************************************

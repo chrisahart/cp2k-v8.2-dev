@@ -113,12 +113,15 @@ MODULE qs_cdft_types
 !> \param target_truncate_max
 !> \param target_truncate_min
 !> \param target_truncate_value
+!> \param strength_positive_truncate
+!> \param strength_negative_truncate
 ! **************************************************************************************************
    TYPE hirshfeld_constraint_type
       INTEGER                              :: gaussian_shape, shape_function, atoms_memory
       LOGICAL                              :: use_bohr, print_density, use_atomic_cutoff, &
                                               zero_strength, set_strength, scale_strength, &
-                                              target_truncate_max, target_truncate_min
+                                              target_truncate_max, target_truncate_min, &
+                                              strength_positive_truncate,strength_negative_truncate
       REAL(KIND=dp)                        :: radius, eps_cutoff, atomic_cutoff, &
                                               set_strength_value, scale_strength_value, &
                                               target_truncate_value
@@ -651,6 +654,8 @@ CONTAINS
       hirshfeld_control%scale_strength = .FALSE.
       hirshfeld_control%target_truncate_max = .FALSE.
       hirshfeld_control%target_truncate_min = .FALSE.
+      hirshfeld_control%strength_positive_truncate = .FALSE.
+      hirshfeld_control%strength_negative_truncate = .FALSE.
       hirshfeld_control%radius = 3.0_dp
       hirshfeld_control%set_strength_value = 0.0_dp
       hirshfeld_control%scale_strength_value = 0.0_dp
