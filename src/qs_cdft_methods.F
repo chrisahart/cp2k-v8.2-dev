@@ -1832,7 +1832,7 @@ CONTAINS
 
        ! If cdft_control%strength > 0 set to zero (useful to override SCF)
        IF (cdft_control%hirshfeld_control%strength_positive_truncate) THEN
-         IF (cdft_control%strength(1) > 0
+         IF (cdft_control%strength(1) > 0.0_dp) THEN
             cdft_control%strength(1) = 0.0_dp
             energy%cdft = 0.0_dp
         END IF
@@ -1840,7 +1840,7 @@ CONTAINS
 
       ! If cdft_control%strength < 0 set to zero (useful to override SCF)
       IF (cdft_control%hirshfeld_control%strength_negative_truncate) THEN
-        IF (cdft_control%strength(1) < 0
+        IF (cdft_control%strength(1) < 0.0_dp) THEN
            cdft_control%strength(1) = 0.0_dp
            energy%cdft = 0.0_dp
        END IF
