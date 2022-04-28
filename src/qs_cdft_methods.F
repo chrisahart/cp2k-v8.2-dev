@@ -1068,6 +1068,8 @@ CONTAINS
                num_species_small(:) = (/ 1, num_species /)
              END IF
 
+             IF (para_env%ionode) PRINT *, "num_species_small", num_species_small
+
                DO k = 1, SIZE(num_species_small)-1
 
                  IF (para_env%ionode) PRINT *, "k num_species_small", k, num_species_small
@@ -1079,6 +1081,7 @@ CONTAINS
                  END IF
 
                  DO i = num_species_small(k), num_species_small(k+1)
+                   IF (para_env%ionode) PRINT *, "i", i
                     NULLIFY (rs_single_dr(i)%rs_grid)
                     CALL rs_grid_create(rs_single_dr(i)%rs_grid, auxbas_rs_desc)
                     CALL rs_grid_zero(rs_single_dr(i)%rs_grid)
