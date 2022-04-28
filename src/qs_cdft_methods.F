@@ -1057,7 +1057,7 @@ CONTAINS
                           END DO
 
              atoms_memory_num = SIZE((/ (j, j = 1, num_species, atoms_memory)/))
-             ! IF (para_env%ionode) PRINT *, "atoms_memory_num", atoms_memory_num
+             IF (para_env%ionode) PRINT *, "atoms_memory_num", atoms_memory_num
 
              IF (num_species > atoms_memory) THEN
                ALLOCATE (num_species_small(atoms_memory_num+1))
@@ -1070,7 +1070,7 @@ CONTAINS
 
                DO k = 1, SIZE(num_species_small)-1
 
-                 ! IF (para_env%ionode) PRINT *, "k num_species_small", k, num_species_small
+                 IF (para_env%ionode) PRINT *, "k num_species_small", k, num_species_small
 
                  IF (num_species > atoms_memory) THEN
                    ALLOCATE (cores(num_species_small(k+1)-num_species_small(k)))
@@ -1828,6 +1828,8 @@ CONTAINS
        DO ivar = 1, nvar
           energy%cdft = energy%cdft + (dE(ivar) - target_val(ivar))*strength(ivar)
           ! IF (para_env%ionode) PRINT *, "energy%cdft", energy%cdft
+          ! IF (para_env%ionode) PRINT *, "dE(:)", dE(:)
+          ! IF (para_env%ionode) PRINT *, "cdft_control%value", cdft_control%value
        END DO
 
        ! If cdft_control%strength > 0 set to zero (useful to override SCF)
