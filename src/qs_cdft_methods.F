@@ -1075,7 +1075,7 @@ CONTAINS
                  IF (para_env%ionode) PRINT *, "k num_species_small", k, num_species_small
 
                  IF (num_species > atoms_memory) THEN
-                   ALLOCATE (cores(num_species_small(k+1)-num_species_small(k)))
+                   ALLOCATE (cores(num_species_small(k+1)-(num_species_small(k)-1)))
                  ELSE
                    ALLOCATE (cores(num_species))
                  END IF
