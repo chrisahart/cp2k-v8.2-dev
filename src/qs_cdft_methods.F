@@ -1059,6 +1059,8 @@ CONTAINS
              atoms_memory_num = SIZE((/ (j, j = 1, num_species, atoms_memory)/))
              ! IF (para_env%ionode) PRINT *, "atoms_memory_num", atoms_memory_num
 
+             ! Can't store all pw grids, therefore split into groups of size atom_memory
+             ! Ideally this code should be re-written to be more memory efficient
              IF (num_species > atoms_memory) THEN
                ALLOCATE (num_species_small(atoms_memory_num+1))
                num_species_small(1:atoms_memory_num) = (/ (j, j = 1, num_species, atoms_memory) /)
