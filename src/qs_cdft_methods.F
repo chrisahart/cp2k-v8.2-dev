@@ -1057,7 +1057,7 @@ CONTAINS
                           END DO
 
              atoms_memory_num = SIZE((/ (j, j = 1, num_species, atoms_memory)/))
-             IF (para_env%ionode) PRINT *, "atoms_memory_num", atoms_memory_num
+             ! IF (para_env%ionode) PRINT *, "atoms_memory_num", atoms_memory_num
 
              IF (num_species > atoms_memory) THEN
                ALLOCATE (num_species_small(atoms_memory_num+1))
@@ -1068,11 +1068,11 @@ CONTAINS
                num_species_small(:) = (/ 1, num_species /)
              END IF
 
-             IF (para_env%ionode) PRINT *, "num_species_small", num_species_small
+             ! IF (para_env%ionode) PRINT *, "num_species_small", num_species_small
 
                DO k = 1, SIZE(num_species_small)-1
 
-                 IF (para_env%ionode) PRINT *, "k num_species_small", k, num_species_small
+                 ! IF (para_env%ionode) PRINT *, "k num_species_small", k, num_species_small
 
                  IF (num_species > atoms_memory) THEN
                    ALLOCATE (cores(num_species_small(k+1)-(num_species_small(k)-1)))
@@ -1101,9 +1101,9 @@ CONTAINS
                   ! DO iatom = num_species_small(k), num_species_small(k+1)
 
                    atom_a = atom_list(iatom+(num_species_small(k)-1))
-                   IF (para_env%ionode) PRINT *, "atom_a", atom_a
-                   IF (para_env%ionode) PRINT *, "iatom", iatom
-                   IF (para_env%ionode) PRINT *, "SIZE(cores)", SIZE(cores)
+                   ! IF (para_env%ionode) PRINT *, "atom_a", atom_a
+                   ! IF (para_env%ionode) PRINT *, "iatom", iatom
+                   ! IF (para_env%ionode) PRINT *, "SIZE(cores)", SIZE(cores)
                    ra(:) = pbc(particle_set(atom_a)%r, cell)
 
                    IF (rs_rho_all%desc%parallel .AND. .NOT. rs_rho_all%desc%distributed) THEN
@@ -1124,8 +1124,8 @@ CONTAINS
                ra(:) = pbc(particle_set(atom_a)%r, cell)
                subpatch_pattern = 0
 
-               IF (para_env%ionode) PRINT *, "iatom", iatom
-               IF (para_env%ionode) PRINT *, "atom_a", atom_a
+               ! IF (para_env%ionode) PRINT *, "iatom", iatom
+               ! IF (para_env%ionode) PRINT *, "atom_a", atom_a
 
                    ! Calculate cutoff (Juerg Hutter code)
                   IF (hirshfeld_control%use_atomic_cutoff) THEN
@@ -1148,7 +1148,7 @@ CONTAINS
 
              ! DO iatom = 1, num_species
             DO iatom = num_species_small(k), num_species_small(k+1)
-              IF (para_env%ionode) PRINT *, "iatom", iatom
+              ! IF (para_env%ionode) PRINT *, "iatom", iatom
                CALL rs_pw_transfer(rs_single_dr(iatom)%rs_grid, pw_single_dr(iatom)%pw, rs2pw)
                CALL rs_grid_release(rs_single_dr(iatom)%rs_grid)
             END DO
@@ -1157,7 +1157,7 @@ CONTAINS
            END DO
 
             DO iatom = 1, num_species
-              IF (para_env%ionode) PRINT *, "iatom", iatom
+              ! IF (para_env%ionode) PRINT *, "iatom", iatom
               atom_a = atom_list(iatom)
              cdft_control%group(igroup)%gradients_x(atom_a, :, :, :) = pw_single_dr(iatom)%pw%cr3d(:, :, :)
              CALL pw_pool_give_back_pw(auxbas_pw_pool, pw_single_dr(iatom)%pw)
@@ -1221,7 +1221,7 @@ CONTAINS
 
                                                        ! cdft_control%group(igroup)%gradients_x(iatom, i, j, k) =0
                                                        ! cdft_control%group(igroup)%gradients_y(iatom, i, j, k) =0
-                                                       cdft_control%group(igroup)%gradients_z(iatom, i, j, k) =0
+                                                       ! cdft_control%group(igroup)%gradients_z(iatom, i, j, k) =0
 
                            END IF
                       END DO ! i = lb(1), ub(1)
