@@ -470,18 +470,17 @@ CONTAINS
                IF (ALLOCATED(cdft_control%group(i)%d_sum_const_dR)) &
                   DEALLOCATE (cdft_control%group(i)%d_sum_const_dR)
 
-                  SELECT CASE (cdft_control%type)
-                  CASE (outer_scf_becke_constraint)
+                  IF (cdft_control%type == outer_scf_becke_constraint) THEN
                     IF (ASSOCIATED(cdft_control%group(i)%gradients)) &
                        DEALLOCATE (cdft_control%group(i)%gradients)
-                  CASE (outer_scf_hirshfeld_constraint)
+                  ELSE IF (cdft_control%type == outer_scf_hirshfeld_constraint) THEN
                     IF (ASSOCIATED(cdft_control%group(i)%gradients_x)) &
                        DEALLOCATE (cdft_control%group(i)%gradients_x)
                     IF (ASSOCIATED(cdft_control%group(i)%gradients_y)) &
                        DEALLOCATE (cdft_control%group(i)%gradients_y)
                     IF (ASSOCIATED(cdft_control%group(i)%gradients_z)) &
                        DEALLOCATE (cdft_control%group(i)%gradients_z)
-                END SELECT
+                END IF
 
                IF (ASSOCIATED(cdft_control%group(i)%integrated)) &
                   DEALLOCATE (cdft_control%group(i)%integrated)
