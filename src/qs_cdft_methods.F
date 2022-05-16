@@ -25,6 +25,7 @@ MODULE qs_cdft_methods
                                               cp_print_key_unit_nr
    USE cp_para_types,                   ONLY: cp_para_env_type
    USE cp_realspace_grid_cube,          ONLY: cp_cube_to_pw
+   USE cube_utils,                      ONLY: cube_info_type
    USE grid_api,                        ONLY: GRID_FUNC_AB,&
                                               collocate_pgf_product
    USE hirshfeld_types,                 ONLY: hirshfeld_type
@@ -633,6 +634,7 @@ CONTAINS
       INTEGER, DIMENSION(2, 3)                           :: bo
       INTEGER, DIMENSION(3)                              :: lb_pw, lb_rs, npts, ub_pw, ub_rs
       INTEGER, DIMENSION(:), POINTER                     :: atom_list, cores
+      TYPE(cube_info_type)                               :: cube_info
       LOGICAL                                            :: my_just_gradients
       LOGICAL, ALLOCATABLE, DIMENSION(:)                 :: compute_charge, is_constraint
       REAL(kind=dp)                                      :: alpha, coef, eps_rho_rspace, exp_eval, &
@@ -694,6 +696,7 @@ CONTAINS
 
       subpatch_pattern = 0
       eps_rho_rspace = dft_control%qs_control%eps_rho_rspace
+      cube_info = pw_env%cube_info(1)
       radius = 100.0_dp
 
       ! For each CDFT group
@@ -702,7 +705,8 @@ CONTAINS
          IF (.NOT. ASSOCIATED(rs_rho_all)) THEN
             CALL pw_env_get(pw_env, auxbas_rs_desc=auxbas_rs_desc, auxbas_rs_grid=rs_rho_all, &
                             auxbas_pw_pool=auxbas_pw_pool)
-            CALL rs_grid_retain(rs_rho_all)
+             cube_info = pw_env%cube_info(1)
+             CALL rs_grid_retain(rs_rho_all)
             CALL rs_grid_zero(rs_rho_all)
          END IF
 
@@ -831,20 +835,20 @@ CONTAINS
                   END IF
 
                   IF (igroup == 1) THEN
-                     CALL collocate_pgf_product(0, alpha, 0, 0, 0.0_dp, 0, ra, &
+                    CALL collocate_pgf_product(0, alpha, 0, 0, 0.0_dp, 0, ra, &
                                                 (/0.0_dp, 0.0_dp, 0.0_dp/), 1.0_dp, pab, 0, 0, &
-                                                rs_rho_all, radius=radius, &
+                                                rs_rho_all, cell, cube_info, radius=radius, &
                                                 ga_gb_function=GRID_FUNC_AB, use_subpatch=.TRUE., &
                                                 subpatch_pattern=subpatch_pattern)
                   END IF
 
                   IF (is_constraint(atom_a)) THEN
-                     CALL collocate_pgf_product(0, alpha, 0, 0, 0.0_dp, 0, ra, &
-                                                (/0.0_dp, 0.0_dp, 0.0_dp/), coefficients(atom_a), &
-                                                pab, 0, 0, rs_rho_constr, &
-                                                radius=radius, &
-                                                ga_gb_function=GRID_FUNC_AB, use_subpatch=.TRUE., &
-                                                subpatch_pattern=subpatch_pattern)
+                    CALL collocate_pgf_product(0, alpha, 0, 0, 0.0_dp, 0, ra, &
+                                                 (/0.0_dp, 0.0_dp, 0.0_dp/), coefficients(atom_a), &
+                                                 pab, 0, 0, rs_rho_constr, cell, cube_info, &
+                                                 radius=radius, &
+                                                 ga_gb_function=GRID_FUNC_AB, use_subpatch=.TRUE., &
+                                                 subpatch_pattern=subpatch_pattern)
                   END IF
 
                   IF (hirshfeld_control%print_density .AND. igroup == 1) THEN
@@ -854,10 +858,10 @@ CONTAINS
                      END DO
                      CPASSERT(iatom <= cdft_control%natoms)
                      CALL collocate_pgf_product(0, alpha, 0, 0, 0.0_dp, 0, ra, &
-                                                (/0.0_dp, 0.0_dp, 0.0_dp/), 1.0_dp, pab, 0, 0, &
-                                                rs_single(iatom)%rs_grid, radius=radius, &
-                                                ga_gb_function=GRID_FUNC_AB, use_subpatch=.TRUE., &
-                                                subpatch_pattern=subpatch_pattern)
+                                                  (/0.0_dp, 0.0_dp, 0.0_dp/), 1.0_dp, pab, 0, 0, &
+                                                  rs_single(iatom)%rs_grid, cell, cube_info, radius=radius, &
+                                                  ga_gb_function=GRID_FUNC_AB, use_subpatch=.TRUE., &
+                                                  subpatch_pattern=subpatch_pattern)
                      END IF
                   END IF
 
@@ -868,10 +872,10 @@ CONTAINS
                         END DO
                         CPASSERT(iatom <= cdft_control%natoms)
                         CALL collocate_pgf_product(0, alpha, 0, 0, 0.0_dp, 0, ra, &
-                                                   (/0.0_dp, 0.0_dp, 0.0_dp/), 1.0_dp, pab, 0, 0, &
-                                                   rs_single_charge(iatom)%rs_grid, radius=radius, &
-                                                   ga_gb_function=GRID_FUNC_AB, use_subpatch=.TRUE., &
-                                                   subpatch_pattern=subpatch_pattern)
+                                                      (/0.0_dp, 0.0_dp, 0.0_dp/), 1.0_dp, pab, 0, 0, &
+                                                      rs_single_charge(iatom)%rs_grid, cell, cube_info, radius=radius, &
+                                                      ga_gb_function=GRID_FUNC_AB, use_subpatch=.TRUE., &
+                                                      subpatch_pattern=subpatch_pattern)
                      END IF
                   END IF
 
@@ -1039,11 +1043,11 @@ CONTAINS
                         END IF
 
                         CALL collocate_pgf_product(0, alpha, 0, 0, 0.0_dp, 0, ra, &
-                                                   (/0.0_dp, 0.0_dp, 0.0_dp/), prefactor, &
-                                                   pab, 0, 0, rs_single_dr(iatom + (num_species_small(k) - 1))%rs_grid, &
-                                                   radius=radius, &
-                                                   ga_gb_function=GRID_FUNC_AB, use_subpatch=.TRUE., &
-                                                   subpatch_pattern=subpatch_pattern)
+                                               (/0.0_dp, 0.0_dp, 0.0_dp/), prefactor, &
+                                               pab, 0, 0, rs_single_dr(iatom+(num_species_small(k)-1))%rs_grid, cell, cube_info, &
+                                               radius=radius, &
+                                               ga_gb_function=GRID_FUNC_AB, use_subpatch=.TRUE., &
+                                               subpatch_pattern=subpatch_pattern)
 
                      END DO
                   END DO
