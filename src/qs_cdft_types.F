@@ -315,9 +315,10 @@ CONTAINS
 ! **************************************************************************************************
    SUBROUTINE becke_control_release(cdft_control)
      TYPE(cdft_control_type), POINTER                   :: cdft_control
+     INTEGER                                            :: i
 
       CPASSERT(ASSOCIATED(becke_control))
-      IF (becke_control%vector_buffer%store_vectors) THEN
+      IF (cdft_control%becke_control%vector_buffer%store_vectors) THEN
          IF (ALLOCATED(cdft_control%becke_control%vector_buffer%distances)) &
             DEALLOCATE (cdft_control%becke_control%vector_buffer%distances)
          IF (ALLOCATED(cdft_control%becke_control%vector_buffer%distance_vecs)) &
@@ -332,8 +333,8 @@ CONTAINS
       ! Constraint atom groups
       IF (ASSOCIATED(cdft_control%group)) THEN
          DO i = 1, SIZE(cdft_control%group)
-            IF (ASSOCIATED(becke_control%group(i)%gradients)) &
-               DEALLOCATE (becke_control%group(i)%gradients)
+            IF (ASSOCIATED(cdft_control%becke_control%group(i)%gradients)) &
+               DEALLOCATE (cdft_control%becke_control%group(i)%gradients)
          END DO
       END IF
       IF (ASSOCIATED(cdft_control%becke_control%cutoffs)) &
@@ -443,7 +444,6 @@ CONTAINS
 ! **************************************************************************************************
    SUBROUTINE cdft_control_release(cdft_control)
       TYPE(cdft_control_type), POINTER                   :: cdft_control
-
       INTEGER                                            :: i
 
       CPASSERT(ASSOCIATED(cdft_control))
@@ -562,8 +562,9 @@ CONTAINS
 ! **************************************************************************************************
    SUBROUTINE hirshfeld_control_release(cdft_control)
      TYPE(cdft_control_type), POINTER                   :: cdft_control
+     INTEGER                                            :: i
 
-      CPASSERT(ASSOCIATED(hirshfeld_control))
+      CPASSERT(ASSOCIATED(cdft_control%hirshfeld_control))
 
       ! Constraint atom groups
       IF (ASSOCIATED(cdft_control%group)) THEN
