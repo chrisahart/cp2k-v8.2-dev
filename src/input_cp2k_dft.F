@@ -4876,9 +4876,7 @@ CONTAINS
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
 
-   END SUBROUTINE create_hirshfeld_constraint_section
-
-   CALL keyword_create(keyword, __LOCATION__, name="PRINT_DENSITY", &
+      CALL keyword_create(keyword, __LOCATION__, name="PRINT_DENSITY", &
                           description="Logical to control printing of Hirshfeld densities to .cube file.", &
                           usage="PRINT_DENSITY TRUE", &
                           default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
@@ -4911,6 +4909,8 @@ CONTAINS
                           usage="ATOMIC_CUTOFF {real} ", default_r_val=1.0e-12_dp)
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
+
+   END SUBROUTINE create_hirshfeld_constraint_section
 
 ! **************************************************************************************************
 !> \brief ...
