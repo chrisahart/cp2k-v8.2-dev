@@ -471,12 +471,12 @@ CONTAINS
                   DEALLOCATE (cdft_control%group(i)%d_sum_const_dR)
                IF (ASSOCIATED(cdft_control%group(i)%gradients)) &
                   DEALLOCATE (cdft_control%group(i)%gradients)
-               IF (ASSOCIATED(cdft_control%group(i)%gradients_x)) &
-                  DEALLOCATE (cdft_control%group(i)%gradients_x)
-               IF (ASSOCIATED(cdft_control%group(i)%gradients_y)) &
-                  DEALLOCATE (cdft_control%group(i)%gradients_y)
-               IF (ASSOCIATED(cdft_control%group(i)%gradients_z)) &
-                  DEALLOCATE (cdft_control%group(i)%gradients_z)
+               ! IF (ASSOCIATED(cdft_control%group(i)%gradients_x)) &
+               !    DEALLOCATE (cdft_control%group(i)%gradients_x)
+               ! IF (ASSOCIATED(cdft_control%group(i)%gradients_y)) &
+               !    DEALLOCATE (cdft_control%group(i)%gradients_y)
+               ! IF (ASSOCIATED(cdft_control%group(i)%gradients_z)) &
+               !    DEALLOCATE (cdft_control%group(i)%gradients_z)
                IF (ASSOCIATED(cdft_control%group(i)%integrated)) &
                   DEALLOCATE (cdft_control%group(i)%integrated)
             END DO
