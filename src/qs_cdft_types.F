@@ -72,6 +72,9 @@ MODULE qs_cdft_types
    END TYPE becke_vector_buffer
 
    TYPE becke_constraint_type
+     ! Atomic gradients of the weight function at every grid point
+      REAL(KIND=dp), POINTER, &
+        DIMENSION(:, :, :, :)             :: gradients
       INTEGER                              :: cavity_shape, cutoff_type, &
                                               confine_bounds(2)
       LOGICAL                              :: in_memory, &
@@ -111,6 +114,12 @@ MODULE qs_cdft_types
       REAL(KIND=dp)                        :: radius, eps_cutoff, atomic_cutoff
       REAL(KIND=dp), DIMENSION(:), POINTER :: radii
       TYPE(hirshfeld_type), POINTER        :: hirshfeld_env
+      REAL(KIND=dp), POINTER, &
+         DIMENSION(:, :, :, :)             :: gradients_x
+      REAL(KIND=dp), POINTER, &
+         DIMENSION(:, :, :, :)             :: gradients_y
+      REAL(KIND=dp), POINTER, &
+         DIMENSION(:, :, :, :)             :: gradients_z
    END TYPE hirshfeld_constraint_type
 
 ! **************************************************************************************************
@@ -197,15 +206,6 @@ MODULE qs_cdft_types
       ! Result of integration dw/dR * rho_r dr where dw/dR is the weight function gradient
       REAL(KIND=dp), POINTER, &
          DIMENSION(:, :)                   :: integrated
-      ! Atomic gradients of the weight function at every grid point
-      REAL(KIND=dp), POINTER, &
-         DIMENSION(:, :, :, :)             :: gradients
-      REAL(KIND=dp), POINTER, &
-         DIMENSION(:, :, :, :)             :: gradients_x
-      REAL(KIND=dp), POINTER, &
-         DIMENSION(:, :, :, :)             :: gradients_y
-      REAL(KIND=dp), POINTER, &
-         DIMENSION(:, :, :, :)             :: gradients_z
       ! The weight function of this constraint group
       TYPE(pw_p_type)                      :: weight
       TYPE(pw_p_type), DIMENSION(:), POINTER             :: hw_rho_atomic
@@ -328,6 +328,13 @@ CONTAINS
             DEALLOCATE (becke_control%vector_buffer%R12)
          IF (ALLOCATED(becke_control%vector_buffer%pair_dist_vecs)) &
             DEALLOCATE (becke_control%vector_buffer%pair_dist_vecs)
+      END IF
+      ! Constraint atom groups
+      IF (ASSOCIATED(cdft_control%group)) THEN
+         DO i = 1, SIZE(cdft_control%group)
+            IF (ASSOCIATED(cdft_control%group(i)%gradients)) &
+               DEALLOCATE (cdft_control%group(i)%gradients)
+         END DO
       END IF
       IF (ASSOCIATED(becke_control%cutoffs)) &
          DEALLOCATE (becke_control%cutoffs)
@@ -469,14 +476,6 @@ CONTAINS
                   DEALLOCATE (cdft_control%group(i)%coeff)
                IF (ALLOCATED(cdft_control%group(i)%d_sum_const_dR)) &
                   DEALLOCATE (cdft_control%group(i)%d_sum_const_dR)
-               IF (ASSOCIATED(cdft_control%group(i)%gradients)) &
-                  DEALLOCATE (cdft_control%group(i)%gradients)
-               ! IF (ASSOCIATED(cdft_control%group(i)%gradients_x)) &
-               !    DEALLOCATE (cdft_control%group(i)%gradients_x)
-               ! IF (ASSOCIATED(cdft_control%group(i)%gradients_y)) &
-               !    DEALLOCATE (cdft_control%group(i)%gradients_y)
-               ! IF (ASSOCIATED(cdft_control%group(i)%gradients_z)) &
-               !    DEALLOCATE (cdft_control%group(i)%gradients_z)
                IF (ASSOCIATED(cdft_control%group(i)%integrated)) &
                   DEALLOCATE (cdft_control%group(i)%integrated)
             END DO
@@ -565,6 +564,18 @@ CONTAINS
       TYPE(hirshfeld_constraint_type), POINTER           :: hirshfeld_control
 
       CPASSERT(ASSOCIATED(hirshfeld_control))
+
+      ! Constraint atom groups
+      IF (ASSOCIATED(cdft_control%group)) THEN
+         DO i = 1, SIZE(cdft_control%group)
+            IF (ASSOCIATED(cdft_control%group(i)%gradients_x)) &
+               DEALLOCATE (cdft_control%group(i)%gradients_x)
+            IF (ASSOCIATED(cdft_control%group(i)%gradients_y)) &
+               DEALLOCATE (cdft_control%group(i)%gradients_y)
+            IF (ASSOCIATED(cdft_control%group(i)%gradients_z)) &
+               DEALLOCATE (cdft_control%group(i)%gradients_z)
+         END DO
+      END IF
 
       IF (ASSOCIATED(hirshfeld_control%radii)) &
          DEALLOCATE (hirshfeld_control%radii)

@@ -565,10 +565,6 @@ CONTAINS
          ALLOCATE (cdft_control%group(k)%atoms(natoms))
          ALLOCATE (cdft_control%group(k)%coeff(natoms))
          NULLIFY (cdft_control%group(k)%weight%pw)
-         NULLIFY (cdft_control%group(k)%gradients)
-         ! NULLIFY (cdft_control%group(k)%gradients_x)
-         ! NULLIFY (cdft_control%group(k)%gradients_y)
-         ! NULLIFY (cdft_control%group(k)%gradients_z)
          NULLIFY (cdft_control%group(k)%integrated)
          tot_natoms = tot_natoms + natoms
          ! Now parse
@@ -775,11 +771,19 @@ CONTAINS
                becke_constraint_section => section_vals_get_subs_vals(cdft_control_section, "BECKE_CONSTRAINT")
                CALL section_vals_get(becke_constraint_section, explicit=exists)
                IF (.NOT. exists) CPABORT("BECKE_CONSTRAINT section is missing.")
+               DO k = 1, nvar
+                  NULLIFY (cdft_control%becke_control%group(k)%gradients)
+                END DO
                CALL read_becke_section(cdft_control, becke_constraint_section)
             CASE (outer_scf_hirshfeld_constraint)
                hirshfeld_constraint_section => section_vals_get_subs_vals(cdft_control_section, "HIRSHFELD_CONSTRAINT")
                CALL section_vals_get(hirshfeld_constraint_section, explicit=exists)
                IF (.NOT. exists) CPABORT("HIRSHFELD_CONSTRAINT section is missing.")
+               DO k = 1, nvar
+                  NULLIFY (cdft_control%hirshfeld_control%group(k)%gradients_x)
+                  NULLIFY (cdft_control%hirshfeld_control%group(k)%gradients_y)
+                  NULLIFY (cdft_control%hirshfeld_control%group(k)%gradients_z)
+                END DO
                CALL read_hirshfeld_constraint_section(cdft_control, hirshfeld_constraint_section)
             CASE DEFAULT
                CPABORT("Unknown constraint type.")

@@ -266,10 +266,10 @@ CONTAINS
          ALLOCATE (atom_in_group(SIZE(group), natom))
          atom_in_group = .FALSE.
          DO igroup = 1, SIZE(group)
-            ALLOCATE (group(igroup)%gradients(3*natom, bo_conf(1, 1):bo_conf(2, 1), &
+            ALLOCATE (cdft_control%becke_control%group(igroup)%gradients(3*natom, bo_conf(1, 1):bo_conf(2, 1), &
                                               bo_conf(1, 2):bo_conf(2, 2), &
                                               bo_conf(1, 3):bo_conf(2, 3)))
-            group(igroup)%gradients = 0.0_dp
+            cdft_control%becke_control%group(igroup)%gradients = 0.0_dp
             ALLOCATE (group(igroup)%d_sum_const_dR(3, natom))
             group(igroup)%d_sum_const_dR = 0.0_dp
             DO ip = 1, SIZE(group(igroup)%atoms)
@@ -526,7 +526,7 @@ CONTAINS
                IF (in_memory .AND. ABS(sum_cell_f_all) .GT. 0.0_dp) THEN
                   DO igroup = 1, SIZE(group)
                      DO iatom = 1, natom
-                        group(igroup)%gradients(3*(iatom - 1) + 1:3*(iatom - 1) + 3, k, j, i) = &
+                        cdft_control%becke_control%group(igroup)%gradients(3*(iatom - 1) + 1:3*(iatom - 1) + 3, k, j, i) = &
                            group(igroup)%d_sum_const_dR(1:3, iatom)/sum_cell_f_all - sum_cell_f_group(igroup)* &
                            d_sum_Pm_dR(1:3, iatom)/(sum_cell_f_all**2)
                      END DO
@@ -951,9 +951,9 @@ CONTAINS
 
       IF (cdft_control%in_memory) THEN
          DO igroup = 1, SIZE(cdft_control%group)
-            ALLOCATE (cdft_control%group(igroup)%gradients_x(1*natom, lb_pw(1):ub_pw(1), &
+            ALLOCATE (cdft_control%hirshfeld_control%group(igroup)%gradients_x(1*natom, lb_pw(1):ub_pw(1), &
                                                              lb_pw(2):ub_pw(2), lb_pw(3):ub_pw(3)))
-            cdft_control%group(igroup)%gradients_x(:, :, :, :) = 0.0_dp
+            cdft_control%hirshfeld_control%group(igroup)%gradients_x(:, :, :, :) = 0.0_dp
          END DO
       END IF
 
@@ -1062,7 +1062,7 @@ CONTAINS
 
                DO iatom = 1, num_species
                   atom_a = atom_list(iatom)
-                  cdft_control%group(igroup)%gradients_x(atom_a, :, :, :) = pw_single_dr(iatom)%pw%cr3d(:, :, :)
+                  cdft_control%hirshfeld_control%group(igroup)%gradients_x(atom_a, :, :, :) = pw_single_dr(iatom)%pw%cr3d(:, :, :)
                   CALL pw_pool_give_back_pw(auxbas_pw_pool, pw_single_dr(iatom)%pw)
                END DO
 
@@ -1076,12 +1076,12 @@ CONTAINS
 
       IF (cdft_control%in_memory) THEN
          DO igroup = 1, SIZE(cdft_control%group)
-            ALLOCATE (cdft_control%group(igroup)%gradients_y(1*num_atoms, lb_pw(1):ub_pw(1), &
+            ALLOCATE (cdft_control%hirshfeld_control%group(igroup)%gradients_y(1*num_atoms, lb_pw(1):ub_pw(1), &
                                                              lb_pw(2):ub_pw(2), lb_pw(3):ub_pw(3)))
-            ALLOCATE (cdft_control%group(igroup)%gradients_z(1*num_atoms, lb_pw(1):ub_pw(1), &
+            ALLOCATE (cdft_control%hirshfeld_control%group(igroup)%gradients_z(1*num_atoms, lb_pw(1):ub_pw(1), &
                                                              lb_pw(2):ub_pw(2), lb_pw(3):ub_pw(3)))
-            cdft_control%group(igroup)%gradients_y(:, :, :, :) = cdft_control%group(igroup)%gradients_x(:, :, :, :)
-            cdft_control%group(igroup)%gradients_z(:, :, :, :) = cdft_control%group(igroup)%gradients_x(:, :, :, :)
+            cdft_control%hirshfeld_control%group(igroup)%gradients_y(:, :, :, :) = cdft_control%group(igroup)%gradients_x(:, :, :, :)
+            cdft_control%hirshfeld_control%group(igroup)%gradients_z(:, :, :, :) = cdft_control%group(igroup)%gradients_x(:, :, :, :)
          END DO
       END IF
 
@@ -1106,18 +1106,18 @@ CONTAINS
                         r_pbc = pbc(ra, r2, cell)
 
                         ! Store gradient d/dR_x w, including term: (r_x - R_x)
-                        cdft_control%group(igroup)%gradients_x(iatom, i, j, k) = &
-                           cdft_control%group(igroup)%gradients_x(iatom, i, j, k)* &
+                        cdft_control%hirshfeld_control%group(igroup)%gradients_x(iatom, i, j, k) = &
+                           cdft_control%hirshfeld_control%group(igroup)%gradients_x(iatom, i, j, k)* &
                            r_pbc(1)*exp_eval
 
                         ! Store gradient d/dR_y w, including term: (r_y - R_y)
-                        cdft_control%group(igroup)%gradients_y(iatom, i, j, k) = &
-                           cdft_control%group(igroup)%gradients_y(iatom, i, j, k)* &
+                        cdft_control%hirshfeld_control%group(igroup)%gradients_y(iatom, i, j, k) = &
+                           cdft_control%hirshfeld_control%group(igroup)%gradients_y(iatom, i, j, k)* &
                            r_pbc(2)*exp_eval
 
                         ! Store gradient d/dR_z w, including term:(r_z - R_z)
-                        cdft_control%group(igroup)%gradients_z(iatom, i, j, k) = &
-                           cdft_control%group(igroup)%gradients_z(iatom, i, j, k)* &
+                        cdft_control%hirshfeld_control%group(igroup)%gradients_z(iatom, i, j, k) = &
+                           cdft_control%hirshfeld_control%group(igroup)%gradients_z(iatom, i, j, k)* &
                            r_pbc(3)*exp_eval
 
                      END IF
@@ -1453,7 +1453,7 @@ CONTAINS
 
                               cdft_control%group(igroup)%integrated(:, iatom) = &
                                  cdft_control%group(igroup)%integrated(:, iatom) + &
-                                 cdft_control%group(igroup)%gradients(3*(iatom - 1) + 1:3*(iatom - 1) + 3, i, j, k) &
+                                 cdft_control%becke_control%group(igroup)%gradients(3*(iatom - 1) + 1:3*(iatom - 1) + 3, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k) &
                                  *dvol
 
@@ -1461,19 +1461,19 @@ CONTAINS
 
                               cdft_control%group(igroup)%integrated(1, iatom) = &
                                  cdft_control%group(igroup)%integrated(1, iatom) &
-                                 + cdft_control%group(igroup)%gradients_x(iatom, i, j, k) &
+                                 + cdft_control%hirshfeld_control%group(igroup)%gradients_x(iatom, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k) &
                                  *dvol
 
                               cdft_control%group(igroup)%integrated(2, iatom) = &
                                  cdft_control%group(igroup)%integrated(2, iatom) &
-                                 + cdft_control%group(igroup)%gradients_y(iatom, i, j, k) &
+                                 + cdft_control%hirshfeld_control%group(igroup)%gradients_y(iatom, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k) &
                                  *dvol
 
                               cdft_control%group(igroup)%integrated(3, iatom) = &
                                  cdft_control%group(igroup)%integrated(3, iatom) &
-                                 + cdft_control%group(igroup)%gradients_z(iatom, i, j, k) &
+                                 + cdft_control%hirshfeld_control%group(igroup)%gradients_z(iatom, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k) &
                                  *dvol
 
@@ -1522,26 +1522,26 @@ CONTAINS
 
                               cdft_control%group(igroup)%integrated(:, iatom) = &
                                  cdft_control%group(igroup)%integrated(:, iatom) + &
-                                 cdft_control%group(igroup)%gradients(3*(iatom - 1) + 1:3*(iatom - 1) + 3, i, j, k) &
+                                 cdft_control%becke_control%group(igroup)%gradients(3*(iatom - 1) + 1:3*(iatom - 1) + 3, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k)*dvol
 
                            ELSE IF (cdft_control%type == outer_scf_hirshfeld_constraint) THEN
 
                               cdft_control%group(igroup)%integrated(1, iatom) = &
                                  cdft_control%group(igroup)%integrated(1, iatom) &
-                                 + cdft_control%group(igroup)%gradients_x(iatom, i, j, k) &
+                                 + cdft_control%hirshfeld_control%group(igroup)%gradients_x(iatom, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k) &
                                  *dvol
 
                               cdft_control%group(igroup)%integrated(2, iatom) = &
                                  cdft_control%group(igroup)%integrated(2, iatom) &
-                                 + cdft_control%group(igroup)%gradients_y(iatom, i, j, k) &
+                                 + cdft_control%hirshfeld_control%group(igroup)%gradients_y(iatom, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k) &
                                  *dvol
 
                               cdft_control%group(igroup)%integrated(3, iatom) = &
                                  cdft_control%group(igroup)%integrated(3, iatom) &
-                                 + cdft_control%group(igroup)%gradients_z(iatom, i, j, k) &
+                                 + cdft_control%hirshfeld_control%group(igroup)%gradients_z(iatom, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k) &
                                  *dvol
 
@@ -1558,13 +1558,13 @@ CONTAINS
       IF (.NOT. cdft_control%transfer_pot) THEN
          IF (cdft_control%type == outer_scf_becke_constraint) THEN
             DO igroup = 1, SIZE(group)
-               DEALLOCATE (cdft_control%group(igroup)%gradients)
+               DEALLOCATE (cdft_control%becke_control%group(igroup)%gradients)
             END DO
          ELSE IF (cdft_control%type == outer_scf_hirshfeld_constraint) THEN
             DO igroup = 1, SIZE(group)
-               DEALLOCATE (cdft_control%group(igroup)%gradients_x)
-               DEALLOCATE (cdft_control%group(igroup)%gradients_y)
-               DEALLOCATE (cdft_control%group(igroup)%gradients_z)
+               DEALLOCATE (cdft_control%hirshfeld_control%group(igroup)%gradients_x)
+               DEALLOCATE (cdft_control%hirshfeld_control%group(igroup)%gradients_y)
+               DEALLOCATE (cdft_control%hirshfeld_control%group(igroup)%gradients_z)
             END DO
          END IF
       END IF
