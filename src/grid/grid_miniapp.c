@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*  CP2K: A general program to perform molecular dynamics simulations         */
-/*  Copyright 2000-2020 CP2K developers group <https://cp2k.org>              */
+/*  Copyright 2000-2021 CP2K developers group <https://cp2k.org>              */
 /*                                                                            */
 /*  SPDX-License-Identifier: GPL-2.0-or-later                                 */
 /*----------------------------------------------------------------------------*/
@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../offload/offload_library.h"
 #include "common/grid_library.h"
 #include "grid_replay.h"
 
@@ -63,6 +64,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  offload_set_device_id(0);
   grid_library_init();
 
   const double max_diff =

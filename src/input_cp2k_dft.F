@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -16,8 +16,8 @@ MODULE input_cp2k_dft
                                               basis_sort_zet
    USE bibliography,                    ONLY: &
         Andermatt2016, Andreussi2012, Avezac2005, BaniHashemian2016, Becke1988b, Bengtsson1999, &
-        Blochl1995, Brehm2018, Brehm2020, Brelaz1979, Dewar1977, Dewar1985, Dudarev1997, &
-        Dudarev1998, Ehrhardt1985, Fattebert2002, Golze2017a, Golze2017b, Guidon2010, &
+        Blochl1995, Brehm2018, Brehm2020, Brehm2021, Brelaz1979, Dewar1977, Dewar1985, &
+        Dudarev1997, Dudarev1998, Ehrhardt1985, Fattebert2002, Golze2017a, Golze2017b, Guidon2010, &
         Heinzmann1976, Holmberg2017, Holmberg2018, Hunt2003, Iannuzzi2005, Iannuzzi2006, &
         Iannuzzi2007, Kolafa2004, Krack2000, Krack2002, Kuhne2007, Kunert2003, Lippert1997, &
         Lippert1999, Lu2004, Perdew1981, Repasky2002, Rocha2006, Rycroft2009, Schenter2008, &
@@ -1292,39 +1292,46 @@ CONTAINS
 
       CALL cp_print_key_section_create( &
          print_key, __LOCATION__, "MO", &
-         description="Controls the printing of the molecular orbitals. "// &
-         "Note that this is only functional with diagonalization based methods, in particular not with OT (see MO_CUBES)", &
+         description="Controls the printing of the molecular orbital (MO) information. The requested MO information "// &
+         "is printed for all occupied MOs by default. Use the MO_INDEX_RANGE keyword to restrict the number "// &
+         "of the MOs or to print the MO information for unoccupied MOs. With diagonalization, additional MOs "// &
+         "have to be made available for printout using the ADDED_MOS keyword in the SCF section. With OT, "// &
+         "it is sufficient to specify the desired MO_INDEX_RANGE. The OT eigensolver can be controlled with "// &
+         "the EPS_LUMO and MAX_ITER_LUMO keywords in the SCF section.", &
          print_level=high_print_level, filename="__STD_OUT__")
-      CALL keyword_create(keyword, __LOCATION__, name="Cartesian", &
-                          description="If the printkey is activated controls the printing of the mo in the cartesian basis", &
+      CALL keyword_create(keyword, __LOCATION__, name="CARTESIAN", &
+                          description="Print the MOs in the Cartesian basis instead of the default spherical basis.", &
                           default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(print_key, keyword)
       CALL keyword_release(keyword)
-      CALL keyword_create(keyword, __LOCATION__, name="EIGENVALUES", variants=s2a("EIGVALS"), &
-                          description="If the printkey is activated controls the printing of the eigenvalues of the mos", &
+      CALL keyword_create(keyword, __LOCATION__, name="ENERGIES", &
+                          variants=s2a("EIGENVALUES", "EIGVALS"), &
+                          description="Print the MO energies (eigenvalues).", &
                           default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(print_key, keyword)
       CALL keyword_release(keyword)
-      CALL keyword_create(keyword, __LOCATION__, name="EIGENVECTORS", variants=s2a("EIGVECS"), &
-                          description="If the printkey is activated controls the printing of the eigenvectors of the mos", &
+      CALL keyword_create(keyword, __LOCATION__, name="COEFFICIENTS", &
+                          variants=s2a("EIGENVECTORS", "EIGVECS"), &
+                          description="Print the MO coefficients (eigenvectors).", &
                           default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(print_key, keyword)
       CALL keyword_release(keyword)
-      CALL keyword_create(keyword, __LOCATION__, name="OCCUPATION_NUMBERS", variants=s2a("OCCNUMS"), &
-                          description="If the printkey is activated controls the printing of the occupation numbers of the mos", &
+      CALL keyword_create(keyword, __LOCATION__, name="OCCUPATION_NUMBERS", &
+                          variants=s2a("OCCNUMS"), &
+                          description="Print the MO occupation numbers.", &
                           default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(print_key, keyword)
       CALL keyword_release(keyword)
       CALL keyword_create(keyword, __LOCATION__, name="NDIGITS", &
-                          description="Specify the number of digits used to print the MO eigenvalues and occupation numbers", &
+                          description="Specify the number of digits used to print the MO information.", &
                           default_i_val=6)
       CALL section_add_keyword(print_key, keyword)
       CALL keyword_release(keyword)
       CALL keyword_create(keyword, __LOCATION__, &
                           name="MO_INDEX_RANGE", &
                           variants=s2a("MO_RANGE", "RANGE"), &
-                          description="Allows to print only a subset of the MO eigenvectors or eigenvalues. "// &
-                          "The indices of the first and the last MO have to be specified", &
+                          description="Print only the requested subset of MOs. The indices of the first and "// &
+                          " the last MO have to be specified to define the range.", &
                           repeats=.FALSE., &
                           n_var=2, &
                           type_of_var=integer_t, &
@@ -1619,12 +1626,18 @@ CONTAINS
       ! Voronoi Integration via LibVori
       CALL cp_print_key_section_create(print_key, __LOCATION__, name="VORONOI", &
                                        description="Controls the Voronoi integration of the total electron density"// &
-                                       " for the computation of electromagnetic moments, see [Thomas2015]"// &
-                                       " and [Brehm2020] (via LibVori,"// &
+                                       " for the computation of electromagnetic moments, see [Thomas2015],"// &
+                                       " [Brehm2020], and [Brehm2021] (via LibVori,"// &
                                        " see <a href=""https://brehm-research.de/voronoi"" target=""_blank"">"// &
                                        " https://brehm-research.de/voronoi</a> ).", &
                                        print_level=debug_print_level + 1, filename="", &
-                                       citations=(/Rycroft2009, Thomas2015, Brehm2018, Brehm2020/))
+                                       citations=(/Rycroft2009, Thomas2015, Brehm2018, Brehm2020, Brehm2021/))
+
+      CALL keyword_create(keyword, __LOCATION__, name="APPEND", &
+                          description="Appends frames to already existing .voronoi file.", &
+                          default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
+      CALL section_add_keyword(print_key, keyword)
+      CALL keyword_release(keyword)
 
       CALL keyword_create(keyword, __LOCATION__, name="SANITY_CHECK", &
                           description="Performs a sanity check before each Voronoi integration, i.e.,"// &
@@ -1635,7 +1648,7 @@ CONTAINS
 
       CALL keyword_create(keyword, __LOCATION__, name="OVERWRITE", &
                           description="Specify this keyword to overwrite any existing ""properties.emp"" file if"// &
-                          " it already exists. By default, the data is appended to an existing file.", &
+                          " it already exists. By default, the data is appended to an existing .emp file.", &
                           usage="OVERWRITE T", default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(print_key, keyword)
       CALL keyword_release(keyword)
@@ -1653,13 +1666,15 @@ CONTAINS
       CALL keyword_release(keyword)
 
       CALL keyword_create(keyword, __LOCATION__, name="OUTPUT_EMP", &
-                          description="Writes the resulting electromagnetic moments to a binary file ""properties.emp"".", &
+                          description="Writes the resulting electromagnetic moments to a binary file ""properties.emp""."// &
+                          " The file name cannot be changed.", &
                           usage="OUTPUT_EMP T", default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(print_key, keyword)
       CALL keyword_release(keyword)
 
       CALL keyword_create(keyword, __LOCATION__, name="OUTPUT_TEXT", &
-                          description="Writes the resulting electromagnetic moments to text files (*.voronoi).", &
+                          description="Writes the resulting electromagnetic moments to text files (*.voronoi)."// &
+                          " The file name is specified via FILENAME.", &
                           usage="OUTPUT_TEXT T", default_l_val=.TRUE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(print_key, keyword)
       CALL keyword_release(keyword)
@@ -2247,6 +2262,14 @@ CONTAINS
                           lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(print_key, keyword)
       CALL keyword_release(keyword)
+      CALL keyword_create(keyword, __LOCATION__, name="Real_space", &
+                          description="Print the KS matrix in real-space instead of k-space.. ", &
+                          usage="REAL_SPACE {logical}", &
+                          repeats=.FALSE., &
+                          default_l_val=.FALSE., &
+                          lone_keyword_l_val=.TRUE.)
+      CALL section_add_keyword(print_key, keyword)
+      CALL keyword_release(keyword)
       CALL section_add_subsection(section, print_key)
       CALL section_release(print_key)
 
@@ -2274,6 +2297,14 @@ CONTAINS
       CALL keyword_create(keyword, __LOCATION__, name="Binary", &
                           description="Whether or not to generate the file in a binary format. ", &
                           usage="BINARY {logical}", &
+                          repeats=.FALSE., &
+                          default_l_val=.FALSE., &
+                          lone_keyword_l_val=.TRUE.)
+      CALL section_add_keyword(print_key, keyword)
+      CALL keyword_release(keyword)
+      CALL keyword_create(keyword, __LOCATION__, name="Real_space", &
+                          description="Print the overlap matrix in real-space instead of k-space.. ", &
+                          usage="REAL_SPACE {logical}", &
                           repeats=.FALSE., &
                           default_l_val=.FALSE., &
                           lone_keyword_l_val=.TRUE.)
@@ -2668,7 +2699,7 @@ CONTAINS
       NULLIFY (keyword)
 
       CALL cp_print_key_section_create(print_key, __LOCATION__, "MO_CUBES", &
-                                       description="Controls the printing of cubes of the molecular orbitals.", &
+                                       description="Controls the printing of the molecular orbitals (MOs) as cube files.", &
                                        print_level=high_print_level, filename="")
       CALL keyword_create(keyword, __LOCATION__, name="stride", &
                           description="The stride (X,Y,Z) used to write the cube file "// &
@@ -4765,47 +4796,6 @@ CONTAINS
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
 
-      CALL keyword_create(keyword, __LOCATION__, name="IN_MEMORY", &
-                          description="Precompute gradients due to constraint during"// &
-                          " initial formation of constraint and store them in memory. Does"// &
-                          " nothing if forces are not calculated.", &
-                          usage="IN_MEMORY", &
-                          default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
-      CALL keyword_create(keyword, __LOCATION__, name="DEBUG", &
-                          description="Enables additional printing. "// &
-                          "May be useful for debugging.", &
-                          usage="DEBUG", &
-                          default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
-      CALL keyword_create(keyword, __LOCATION__, name="PRINT_FORCE", &
-                          description="Print force "// &
-                          "May be useful for debugging.", &
-                          usage="PRINT_FORCE", &
-                          default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
-      CALL keyword_create(keyword, __LOCATION__, name="ENERGY_ONLY", &
-                          description="Do not calculate CDFT forces. "// &
-                          "May be useful for debugging.", &
-                          usage="ENERGY_ONLY", &
-                          default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
-      CALL keyword_create(keyword, __LOCATION__, name="CALC_CDFT_POT", &
-                          description="Calculate CDFT potential energy. "// &
-                          "May be useful for debugging.", &
-                          usage="CALC_CDFT_POT", &
-                          default_l_val=.TRUE., lone_keyword_l_val=.TRUE.)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
    END SUBROUTINE create_cdft_control_section
 
 ! **************************************************************************************************
@@ -4876,114 +4866,6 @@ CONTAINS
                           default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
-
-      CALL keyword_create(keyword, __LOCATION__, name="PRINT_DENSITY", &
-                          description="PRINT_DENSITY", &
-                          usage="PRINT_DENSITY TRUE", &
-                          default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
-      CALL keyword_create(keyword, __LOCATION__, name="ATOMS_MEMORY", &
-                          description="atoms_memory", &
-                          usage="ATOMS_MEMORY", &
-                          n_var=1, type_of_var=integer_t, &
-                          default_i_val=80)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
-      CALL keyword_create(keyword, __LOCATION__, name="USE_ATOMIC_CUTOFF", &
-                          description="USE_ATOMIC_CUTOFF", &
-                          usage="USE_ATOMIC_CUTOFF TRUE", &
-                          default_l_val=.TRUE., lone_keyword_l_val=.TRUE.)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
-      CALL keyword_create(keyword, __LOCATION__, name="EPS_CUTOFF", &
-                          description="Density threshold for constraint.", &
-                          usage="EPS_CUTOFF {real} ", default_r_val=1.0e-12_dp)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
-      CALL keyword_create(keyword, __LOCATION__, name="ATOMIC_CUTOFF", &
-                          description="Density threshold for constraint.", &
-                          usage="ATOMIC_CUTOFF {real} ", default_r_val=1.0e-12_dp)
-      CALL section_add_keyword(section, keyword)
-      CALL keyword_release(keyword)
-
-            CALL keyword_create(keyword, __LOCATION__, name="ZERO_STRENGTH", &
-                                description="overrides SCF EXTRAOPOLATION_ORDER"// &
-                                " setting CDFT strength to zero each SCF.", &
-                                usage="ZERO_STRENGTH", &
-                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-            CALL section_add_keyword(section, keyword)
-            CALL keyword_release(keyword)
-
-            CALL keyword_create(keyword, __LOCATION__, name="SET_STRENGTH", &
-                                description="Set strength to SET_STRENGTH"// &
-                                "useful to override SCF.", &
-                                usage="SET_STRENGTH", &
-                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-            CALL section_add_keyword(section, keyword)
-            CALL keyword_release(keyword)
-
-            CALL keyword_create(keyword, __LOCATION__, name="SET_STRENGTH_VALUE", &
-                                description="Set strength.", &
-                                usage="SET_STRENGTH {real} ", default_r_val=0.0_dp)
-            CALL section_add_keyword(section, keyword)
-            CALL keyword_release(keyword)
-
-            CALL keyword_create(keyword, __LOCATION__, name="SCALE_STRENGTH", &
-                                description="SCALE_STRENGTH"// &
-                                "useful to override SCF.", &
-                                usage="SCALE_STRENGTH", &
-                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-            CALL section_add_keyword(section, keyword)
-            CALL keyword_release(keyword)
-
-            CALL keyword_create(keyword, __LOCATION__, name="SCALE_STRENGTH_VALUE", &
-                                description="SCALE_STRENGTH_VALUE.", &
-                                usage="SCALE_STRENGTH_VALUE {real} ", default_r_val=0.0_dp)
-            CALL section_add_keyword(section, keyword)
-            CALL keyword_release(keyword)
-
-            CALL keyword_create(keyword, __LOCATION__, name="TARGET_TRUNCATE_MAX", &
-                                description="TARGET_TRUNCATE_MAX "// &
-                                "useful to override SCF.", &
-                                usage="TARGET_TRUNCATE_MAX", &
-                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-            CALL section_add_keyword(section, keyword)
-            CALL keyword_release(keyword)
-
-            CALL keyword_create(keyword, __LOCATION__, name="TARGET_TRUNCATE_MIN", &
-                                description="TARGET_TRUNCATE_MIN "// &
-                                "useful to override SCF.", &
-                                usage="TARGET_TRUNCATE_MIN", &
-                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-            CALL section_add_keyword(section, keyword)
-            CALL keyword_release(keyword)
-
-            CALL keyword_create(keyword, __LOCATION__, name="TARGET_TRUNCATE_VALUE", &
-                                description="TARGET_TRUNCATE_VALUE.", &
-                                usage="TARGET_TRUNCATE_VALUE {real} ", default_r_val=0.0_dp)
-            CALL section_add_keyword(section, keyword)
-            CALL keyword_release(keyword)
-
-            CALL keyword_create(keyword, __LOCATION__, name="STRENGTH_POSITIVE_TRUNCATE", &
-                                description="STRENGTH_POSITIVE_TRUNCATE"// &
-                                "useful to override SCF.", &
-                                usage="STRENGTH_POSITIVE_TRUNCATE", &
-                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-            CALL section_add_keyword(section, keyword)
-            CALL keyword_release(keyword)
-
-            CALL keyword_create(keyword, __LOCATION__, name="STRENGTH_NEGATIVE_TRUNCATE", &
-                                description="STRENGTH_NEGATIVE_TRUNCATE"// &
-                                "useful to override SCF.", &
-                                usage="STRENGTH_NEGATIVE_TRUNCATE", &
-                                default_l_val=.FALSE., lone_keyword_l_val=.TRUE.)
-            CALL section_add_keyword(section, keyword)
-            CALL keyword_release(keyword)
 
    END SUBROUTINE create_hirshfeld_constraint_section
 
@@ -5296,15 +5178,16 @@ CONTAINS
 
       CALL keyword_create(keyword, __LOCATION__, name="MAX_ITER_LUMO", &
                           variants=(/"MAX_ITER_LUMOS"/), &
-                          description="The maximum number of iteration for the lumo computation", &
+                          description="Maximum number of iterations for the calculation of the LUMO energies "// &
+                          "with the OT eigensolver.", &
                           usage="MAX_ITER_LUMO 100", default_i_val=299)
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
 
       CALL keyword_create(keyword, __LOCATION__, name="EPS_LUMO", &
                           variants=(/"EPS_LUMOS"/), &
-                          description="target accuracy of the computation of the lumo energy", &
-                          usage="EPS_LUMO 1.e-6", default_r_val=1.0e-5_dp)
+                          description="Target accuracy for the calculation of the LUMO energies with the OT eigensolver.", &
+                          usage="EPS_LUMO 1.0E-6", default_r_val=1.0E-5_dp)
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
 

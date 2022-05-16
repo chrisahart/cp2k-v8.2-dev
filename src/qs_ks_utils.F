@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -1275,7 +1275,6 @@ CONTAINS
       ENDIF
 
       nspins = dft_control%nspins
-      CALL get_qs_env(qs_env, nkind=nkind, para_env=para_env)
 
       ! sum up potentials and integrate
       IF (ASSOCIATED(v_rspace_new)) THEN
@@ -1319,12 +1318,8 @@ CONTAINS
                                                 +v_spin_ddapc_rest_r%pw%cr3d
                END IF
             END IF
-
             ! CDFT constraint contribution
             IF (dft_control%qs_control%cdft) THEN
-              ! IF (para_env%ionode) PRINT *, cdft_control%calc_cdft_pot
-              IF (cdft_control%calc_cdft_pot) THEN
-                ! IF (para_env%ionode) PRINT *, "Adding CDFT potential energy to total energy"
                DO igroup = 1, SIZE(cdft_control%group)
                   SELECT CASE (cdft_control%group(igroup)%constraint_type)
                   CASE (cdft_charge_constraint)
@@ -1349,7 +1344,6 @@ CONTAINS
                                                 cdft_control%strength(igroup)
                END DO
             END IF
-          END IF
             ! The efield contribution
             IF (dft_control%apply_efield_field) THEN
                v_rspace_new(ispin)%pw%cr3d = v_rspace_new(ispin)%pw%cr3d+ &
@@ -1404,7 +1398,7 @@ CONTAINS
             ENDIF
             IF (lrigpw) THEN
                lri_v_int => lri_density%lri_coefs(ispin)%lri_kinds
-               ! CALL get_qs_env(qs_env, nkind=nkind, para_env=para_env)
+               CALL get_qs_env(qs_env, nkind=nkind, para_env=para_env)
                DO ikind = 1, nkind
                   lri_v_int(ikind)%v_int = 0.0_dp
                END DO

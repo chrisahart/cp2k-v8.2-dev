@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -47,8 +47,8 @@ MODULE cp2k_info
    CHARACTER(LEN=*), PARAMETER :: compile_revision = "unknown"
 #endif
 
-   CHARACTER(LEN=*), PARAMETER :: version_nr = "8.1"
-   CHARACTER(LEN=*), PARAMETER :: cp2k_year = "2020"
+   CHARACTER(LEN=*), PARAMETER :: version_nr = "8.2"
+   CHARACTER(LEN=*), PARAMETER :: cp2k_year = "2021"
    CHARACTER(LEN=*), PARAMETER :: cp2k_version = "CP2K version "//TRIM(version_nr)
    CHARACTER(LEN=*), PARAMETER :: cp2k_home = "https://www.cp2k.org/"
 
@@ -126,14 +126,14 @@ CONTAINS
 #if defined(__SCALAPACK)
       flags = TRIM(flags)//" scalapack"
 #endif
+#if defined(__COSMA)
+      flags = TRIM(flags)//" cosma"
+#endif
 
 #if defined(__QUIP)
       flags = TRIM(flags)//" quip"
 #endif
 
-#if defined(__ACC)
-      flags = TRIM(flags)//" acc"
-#endif
 #if defined(__PW_CUDA)
       flags = TRIM(flags)//" pw_cuda"
 #endif
@@ -220,9 +220,6 @@ CONTAINS
 #endif
 #if defined(__DBCSR_ACC)
       flags = TRIM(flags)//" dbcsr_acc"
-#endif
-#if defined(__HAS_LIBGRID)
-      flags = TRIM(flags)//" libgrid"
 #endif
 #if defined(__MAX_CONTR)
       CALL integer_to_string(__MAX_CONTR, tmp_str)

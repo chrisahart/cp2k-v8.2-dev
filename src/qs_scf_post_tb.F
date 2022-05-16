@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -9,6 +9,7 @@
 !> \brief Does all kind of post scf calculations for DFTB
 !> \par History
 !>      Started as a copy from the GPW file
+!>      - Revise MO information printout (10.05.2021, MK)
 !> \author JHU (03.2013)
 ! **************************************************************************************************
 MODULE qs_scf_post_tb
@@ -115,7 +116,6 @@ MODULE qs_scf_post_tb
    USE qs_ks_types,                     ONLY: get_ks_env,&
                                               qs_ks_env_type,&
                                               set_ks_env
-   USE qs_mo_io,                        ONLY: write_mo_set
    USE qs_mo_methods,                   ONLY: calculate_subspace_eigenvalues,&
                                               make_mo_eig
    USE qs_mo_occupation,                ONLY: set_mo_occupation
@@ -129,6 +129,7 @@ MODULE qs_scf_post_tb
                                               qs_rho_type
    USE qs_scf_csr_write,                ONLY: write_ks_matrix_csr,&
                                               write_s_matrix_csr
+   USE qs_scf_output,                   ONLY: qs_scf_write_mos
    USE qs_scf_types,                    ONLY: ot_method_nr,&
                                               qs_scf_env_type
    USE qs_scf_wfn_mix,                  ONLY: wfn_mix
@@ -205,7 +206,8 @@ CONTAINS
       TYPE(qs_subsys_type), POINTER                      :: subsys
       TYPE(scf_control_type), POINTER                    :: scf_control
       TYPE(section_vals_type), POINTER                   :: dft_section, moments_section, print_key, &
-                                                            print_section, wfn_mix_section
+                                                            print_section, sprint_section, &
+                                                            wfn_mix_section
       TYPE(xtb_atom_type), POINTER                       :: xtb_kind
 
       CALL timeset(routineN, handle)
@@ -373,7 +375,18 @@ CONTAINS
       IF (.NOT. no_mos) THEN
          print_key => section_vals_get_subs_vals(print_section, "MO")
          IF (BTEST(cp_print_key_should_output(logger%iter_info, print_key), cp_p_file)) THEN
-            CALL print_mos(qs_env, dft_section, tb_type)
+            CALL qs_scf_write_mos(qs_env, scf_env, final_mos=.TRUE.)
+            IF (.NOT. do_kpoints) THEN
+               SELECT CASE (tb_type)
+               CASE ("DFTB")
+               CASE ("xTB")
+                  sprint_section => section_vals_get_subs_vals(dft_section, "PRINT%MO_MOLDEN")
+                  CALL get_qs_env(qs_env, mos=mos)
+                  CALL write_mos_molden(mos, qs_kind_set, particle_set, sprint_section)
+               CASE DEFAULT
+                  CPABORT("Unknown TB type")
+               END SELECT
+            END IF
          END IF
       END IF
 
@@ -393,9 +406,9 @@ CONTAINS
             ELSE
                CALL get_qs_env(qs_env, mos=mos)
                CALL calculate_dos(mos, qs_env, dft_section)
-            ENDIF
-         ENDIF
-      ENDIF
+            END IF
+         END IF
+      END IF
 
       ! PDOS
       IF (.NOT. no_mos) THEN
@@ -413,7 +426,7 @@ CONTAINS
                         mo_coeff_deriv => qs_env%mo_derivs(ispin)%matrix
                      ELSE
                         mo_coeff_deriv => NULL()
-                     ENDIF
+                     END IF
                      CALL calculate_subspace_eigenvalues(mo_coeff, ks_rmpv(ispin)%matrix, mo_eigenvalues, &
                                                          do_rotation=.TRUE., &
                                                          co_rotate_dbcsr=mo_coeff_deriv)
@@ -426,8 +439,8 @@ CONTAINS
                      CALL calculate_projected_dos(mos(ispin)%mo_set, atomic_kind_set, &
                                                   qs_kind_set, particle_set, qs_env, dft_section)
                   END IF
-               ENDDO
-            ENDIF
+               END DO
+            END IF
          END IF
       END IF
 
@@ -459,7 +472,7 @@ CONTAINS
          ELSE
             CPWARN("Energy Windows not implemented for TB methods.")
          END IF
-      ENDIF
+      END IF
 
       ! DENSITY CUBE FILE
       print_key => section_vals_get_subs_vals(print_section, "E_DENSITY_CUBE")
@@ -585,7 +598,7 @@ CONTAINS
                      DO ispin = 1, dft_control%nspins
                         DEALLOCATE (unoccupied_evals_stm(ispin)%array)
                         CALL cp_fm_release(unoccupied_orbs_stm(ispin)%matrix)
-                     ENDDO
+                     END DO
                      DEALLOCATE (unoccupied_evals_stm)
                      DEALLOCATE (unoccupied_orbs_stm)
                   END IF
@@ -721,6 +734,9 @@ CONTAINS
                ria = pbc(ria, cell)
                via = particle_set(iat)%v(:)
                q = charges(iat)
+!deb
+! WRITE(6,*) "DEBUG ",q,particle_set(iat)%r(2),ria(2)
+!deb
                DO j = 1, 3
                   gvec = twopi*cell%h_inv(j, :)
                   theta = SUM(ria(:)*gvec(:))
@@ -729,11 +745,22 @@ CONTAINS
                   dzeta = -q*CMPLX(-SIN(theta), COS(theta), KIND=dp)**(-q - 1.0_dp)*dtheta
                   dggamma(j) = dggamma(j)*zeta + ggamma(j)*dzeta
                   ggamma(j) = ggamma(j)*zeta
+!deb
+! if(j==2) then
+!     WRITE(6,*) "DEBUG ",iat,gvec(:)
+!     WRITE(6,*) "DEBUG ",iat,theta,zeta,ggamma(j)
+! endif
+!deb
                END DO
-            ENDDO
+            END DO
          END DO
          dggamma = dggamma*zphase + ggamma*dzphase
          ggamma = ggamma*zphase
+!deb
+! WRITE(6,*) "DEBUG 1  ",ggamma(1)
+! WRITE(6,*) "DEBUG 2  ",ggamma(2)
+! WRITE(6,*) "DEBUG 3  ",ggamma(3)
+!deb
          IF (ALL(REAL(ggamma, KIND=dp) /= 0.0_dp)) THEN
             tmp = AIMAG(ggamma)/REAL(ggamma, KIND=dp)
             ci = -ATAN(tmp)
@@ -742,6 +769,24 @@ CONTAINS
             dipole = MATMUL(cell%hmat, ci)/twopi
             dipole_deriv = MATMUL(cell%hmat, dci)/twopi
          END IF
+!deb
+! WRITE(6,*) "DIPOLE   ",dipole
+!deb
+
+!           zi(:) = CMPLX(1._dp, 0._dp, dp)
+!           DO ia = 1, SIZE(particle_set)
+!              ria = particle_set(ia)%r
+!              ria = pbc(ria, cell)
+!              DO i = 1, 3
+!                 gvec(:) = twopi*cell%h_inv(i, :)
+!                 dd = SUM(gvec(:)*ria(:))
+!                 zdeta = CMPLX(COS(dd), SIN(dd), KIND=dp)**charge
+!                 zi(i) = zi(i)*zdeta
+!              END DO
+!           END DO
+!           zi = zi*zphase
+!           ci = AIMAG(LOG(zi))/twopi
+
       ELSE
          dipole_type = "non-periodic"
          DO i = 1, SIZE(particle_set)
@@ -849,88 +894,6 @@ CONTAINS
    END SUBROUTINE wfn_mix_tb
 
 ! **************************************************************************************************
-!> \brief MO printing
-!> \param qs_env ...
-!> \param dft_section ...
-!> \param tb_type ...
-!> \par History
-!> \author JHU
-!> \note
-! **************************************************************************************************
-   SUBROUTINE print_mos(qs_env, dft_section, tb_type)
-
-      TYPE(qs_environment_type), POINTER                 :: qs_env
-      TYPE(section_vals_type), POINTER                   :: dft_section
-      CHARACTER(LEN=*)                                   :: tb_type
-
-      INTEGER                                            :: ik, iounit
-      LOGICAL                                            :: do_kpoints
-      TYPE(atomic_kind_type), DIMENSION(:), POINTER      :: atomic_kind_set
-      TYPE(cp_logger_type), POINTER                      :: logger
-      TYPE(dft_control_type), POINTER                    :: dft_control
-      TYPE(kpoint_type), POINTER                         :: kpoints
-      TYPE(mo_set_p_type), DIMENSION(:), POINTER         :: mos
-      TYPE(mo_set_p_type), DIMENSION(:, :), POINTER      :: mos_k
-      TYPE(particle_type), DIMENSION(:), POINTER         :: particle_set
-      TYPE(qs_kind_type), DIMENSION(:), POINTER          :: qs_kind_set
-      TYPE(section_vals_type), POINTER                   :: sprint_section
-
-      CPASSERT(ASSOCIATED(qs_env))
-      IF (qs_env%run_rtp) RETURN
-
-      logger => cp_get_default_logger()
-      iounit = cp_logger_get_default_io_unit(logger)
-
-      CALL get_qs_env(qs_env, &
-                      dft_control=dft_control, &
-                      do_kpoints=do_kpoints, &
-                      atomic_kind_set=atomic_kind_set, &
-                      particle_set=particle_set, &
-                      qs_kind_set=qs_kind_set)
-
-      IF (.NOT. do_kpoints) THEN
-         CALL get_qs_env(qs_env, mos=mos)
-         IF (dft_control%nspins == 2) THEN
-            CALL write_mo_set(mos(1)%mo_set, atomic_kind_set, qs_kind_set, particle_set, 4, &
-                              dft_section, spin="ALPHA", last=.TRUE.)
-            CALL write_mo_set(mos(2)%mo_set, atomic_kind_set, qs_kind_set, particle_set, 4, &
-                              dft_section, spin="BETA", last=.TRUE.)
-         ELSE
-            CALL write_mo_set(mos(1)%mo_set, atomic_kind_set, qs_kind_set, particle_set, 4, &
-                              dft_section, last=.TRUE.)
-         END IF
-         !
-         SELECT CASE (tb_type)
-         CASE ("DFTB")
-            !
-         CASE ("xTB")
-            sprint_section => section_vals_get_subs_vals(dft_section, "PRINT%MO_MOLDEN")
-            CALL write_mos_molden(mos, qs_kind_set, particle_set, sprint_section)
-         CASE DEFAULT
-            CPABORT("unknown TB type")
-         END SELECT
-      ELSE
-         CALL get_qs_env(qs_env=qs_env, kpoints=kpoints)
-         IF (kpoints%nkp /= 0) THEN
-            DO ik = 1, SIZE(kpoints%kp_env)
-               mos_k => kpoints%kp_env(ik)%kpoint_env%mos
-               CPASSERT(ASSOCIATED(mos_k))
-               IF (dft_control%nspins == 2) THEN
-                  CALL write_mo_set(mos_k(1, 1)%mo_set, atomic_kind_set, qs_kind_set, particle_set, 4, &
-                                    dft_section, spin="ALPHA", last=.TRUE., kpt=ik)
-                  CALL write_mo_set(mos_k(1, 2)%mo_set, atomic_kind_set, qs_kind_set, particle_set, 4, &
-                                    dft_section, spin="BETA", last=.TRUE., kpt=ik)
-               ELSE
-                  CALL write_mo_set(mos_k(1, 1)%mo_set, atomic_kind_set, qs_kind_set, particle_set, 4, &
-                                    dft_section, last=.TRUE., kpt=ik)
-               END IF
-            END DO
-         END IF
-      END IF
-
-   END SUBROUTINE print_mos
-
-! **************************************************************************************************
 !> \brief Gets the lumos, and eigenvalues for the lumos
 !> \param qs_env ...
 !> \param scf_env ...
@@ -998,8 +961,8 @@ CONTAINS
             ! this one can for sure not be right (as it has to match a given C0)
             IF (local_preconditioner%in_use == ot_precond_full_all) THEN
                NULLIFY (local_preconditioner)
-            ENDIF
-         ENDIF
+            END IF
+         END IF
 
          CALL ot_eigensolver(matrix_h=ks_rmpv(ispin)%matrix, matrix_s=matrix_s(1)%matrix, &
                              matrix_c_fm=unoccupied_orbs(ispin)%matrix, &
@@ -1038,7 +1001,7 @@ CONTAINS
          CALL pw_env_create(new_pw_env)
          CALL set_ks_env(ks_env, pw_env=new_pw_env)
          CALL pw_env_release(new_pw_env)
-      ENDIF
+      END IF
       CALL get_qs_env(qs_env, pw_env=new_pw_env, dft_control=dft_control, cell=cell)
 
       new_pw_env%cell_hmat = cell%hmat
@@ -1049,7 +1012,7 @@ CONTAINS
       IF (.NOT. ASSOCIATED(task_list)) THEN
          CALL allocate_task_list(task_list)
          CALL set_ks_env(ks_env, task_list=task_list)
-      ENDIF
+      END IF
       skip_load_balance_distributed = dft_control%qs_control%skip_load_balance_distributed
       CALL generate_qs_task_list(ks_env, task_list, &
                                  reorder_rs_grid_ranks=.TRUE., soft_valid=.FALSE., &
@@ -1615,10 +1578,10 @@ CONTAINS
                   CALL cp_pw_to_cube(wf_r%pw, unit_nr, title, particles=particles, &
                                      stride=section_get_ivals(cube_section, "STRIDE"), mpi_io=mpi_io)
                   CALL cp_print_key_finished_output(unit_nr, logger, cube_section, '', mpi_io=mpi_io)
-               ENDDO
-            ENDIF
+               END DO
+            END IF
          END DO
-      ENDIF
+      END IF
 
       IF (nlumo /= 0) THEN
          DO ispin = 1, dft_control%nspins
@@ -1645,7 +1608,7 @@ CONTAINS
                   CALL cp_pw_to_cube(wf_r%pw, unit_nr, title, particles=particles, &
                                      stride=section_get_ivals(cube_section, "STRIDE"), mpi_io=mpi_io)
                   CALL cp_print_key_finished_output(unit_nr, logger, cube_section, '', mpi_io=mpi_io)
-               ENDDO
+               END DO
             END IF
          END DO
       END IF

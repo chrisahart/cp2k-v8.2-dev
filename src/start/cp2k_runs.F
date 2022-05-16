@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -47,7 +47,6 @@ MODULE cp2k_runs
                                               dbcsr_init_lib,&
                                               dbcsr_print_config,&
                                               dbcsr_print_statistics
-   USE dbcsr_config,                    ONLY: get_accdrv_active_device_id
    USE environment,                     ONLY: cp2k_finalize,&
                                               cp2k_init,&
                                               cp2k_read,&
@@ -117,6 +116,8 @@ MODULE cp2k_runs
                                               loop_over_molecules
    USE neb_methods,                     ONLY: neb
    USE negf_methods,                    ONLY: do_negf
+   USE offload_api,                     ONLY: offload_get_device_count,&
+                                              offload_get_device_id
    USE optimize_basis,                  ONLY: run_optimize_basis
    USE optimize_input,                  ONLY: run_optimize_input
    USE pint_methods,                    ONLY: do_pint_run
@@ -178,8 +179,9 @@ CONTAINS
       CHARACTER(len=default_path_length), &
          DIMENSION(:, :), INTENT(IN)                     :: initial_variables
 
-      INTEGER :: f_env_handle, grid_backend, grid_queue_length, ierr, iter_level, method_name_id, &
-         new_env_id, prog_name_id, run_type_id
+      INTEGER                                            :: f_env_handle, grid_backend, ierr, &
+                                                            iter_level, method_name_id, &
+                                                            new_env_id, prog_name_id, run_type_id
       INTEGER(KIND=int_8)                                :: m_memory_max_mpi
       LOGICAL                                            :: echo_input, grid_apply_cutoff, &
                                                             grid_validate, I_was_ionode
@@ -194,9 +196,12 @@ CONTAINS
       NULLIFY (para_env, f_env, dft_control)
       CALL cp_para_env_create(para_env, group=mpi_comm, owns_group=.FALSE.)
 
-      ! DBCSR sets the GPU device, make sure it is the first GPU call
-      CALL dbcsr_init_lib(mpi_comm, io_unit=output_unit)
-      CALL dbcsr_init_lib(mpi_comm, io_unit=output_unit)
+      IF (offload_get_device_count() > 0) THEN
+         CALL dbcsr_init_lib(mpi_comm, io_unit=output_unit, &
+                             accdrv_active_device_id=offload_get_device_id())
+      ELSE
+         CALL dbcsr_init_lib(mpi_comm, io_unit=output_unit)
+      ENDIF
 
       CALL cuda_nvtx_init()
 
@@ -255,12 +260,10 @@ CONTAINS
       CALL section_vals_val_get(root_section, "GLOBAL%GRID%BACKEND", i_val=grid_backend)
       CALL section_vals_val_get(root_section, "GLOBAL%GRID%VALIDATE", l_val=grid_validate)
       CALL section_vals_val_get(root_section, "GLOBAL%GRID%APPLY_CUTOFF", l_val=grid_apply_cutoff)
-      CALL section_vals_val_get(root_section, "GLOBAL%GRID%QUEUE_LENGTH", i_val=grid_queue_length)
+
       CALL grid_library_set_config(backend=grid_backend, &
-                                   device_id=get_accdrv_active_device_id(), &
                                    validate=grid_validate, &
-                                   apply_cutoff=grid_apply_cutoff, &
-                                   queue_length=grid_queue_length)
+                                   apply_cutoff=grid_apply_cutoff)
 
       SELECT CASE (prog_name_id)
       CASE (do_atom)
@@ -278,9 +281,13 @@ CONTAINS
          CALL cp_sirius_finalize()
          CALL pw_cuda_finalize()
          CALL pw_fpga_finalize()
-         ! DBCSR sets the GPU device, make sure it is the first GPU call
          CALL farming_run(input_declaration, root_section, para_env, initial_variables)
-         CALL dbcsr_init_lib(mpi_comm, io_unit=output_unit)
+         IF (offload_get_device_count() > 0) THEN
+            CALL dbcsr_init_lib(mpi_comm, io_unit=output_unit, &
+                                accdrv_active_device_id=offload_get_device_id())
+         ELSE
+            CALL dbcsr_init_lib(mpi_comm, io_unit=output_unit)
+         ENDIF
          CALL pw_cuda_init()
          CALL pw_fpga_init()
          CALL cp_sirius_init()

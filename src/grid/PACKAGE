@@ -7,11 +7,11 @@
         "../common",
         "../subsys",
         "../mpiwrap",
+        "../offload",
         "./common",
         "./ref",
         "./cpu",
         "./gpu",
-        "./hybrid",
     ],
     "public": ["grid_api.F"],
 }

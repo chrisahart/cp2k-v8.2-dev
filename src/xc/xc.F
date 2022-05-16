@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -128,6 +128,8 @@ CONTAINS
       CPASSERT(ASSOCIATED(xc_section))
       CPASSERT(.NOT. ASSOCIATED(vxc_rho))
       CPASSERT(.NOT. ASSOCIATED(vxc_tau))
+
+      virial_xc = 0.0_dp
 
       CALL section_vals_val_get(xc_section, "FUNCTIONAL_ROUTINE", &
                                 i_val=f_routine)
@@ -897,7 +899,7 @@ CONTAINS
 !$OMP              PARALLEL DO DEFAULT(NONE) SHARED(bo,e_0,pot,rho,&
 !$OMP                          rho_cutoff,rho_smooth_cutoff,rho_smooth_cutoff_2,&
 !$OMP                          rho_smooth_cutoff_range_2,my_e_0_scale_factor)&
-!$OMP                    PRIVATE(k,j,i,my_rho,my_rho_n,my_rho_n2)
+!$OMP                    PRIVATE(k,j,i,my_rho,my_rho_n,my_rho_n2) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -930,7 +932,7 @@ CONTAINS
 !$OMP              PARALLEL DO DEFAULT(NONE) SHARED(bo,pot,e_0,rhoa,rhob,&
 !$OMP                          rho_cutoff,rho_smooth_cutoff,rho_smooth_cutoff_2,&
 !$OMP                          rho_smooth_cutoff_range_2,my_e_0_scale_factor)&
-!$OMP                    PRIVATE(k,j,i,my_rho,my_rho_n,my_rho_n2)
+!$OMP                    PRIVATE(k,j,i,my_rho,my_rho_n,my_rho_n2) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -965,7 +967,7 @@ CONTAINS
 !$OMP              PARALLEL DO DEFAULT(NONE) SHARED(bo,pot,&
 !$OMP                          rho_cutoff,rho_smooth_cutoff,rho_smooth_cutoff_2,&
 !$OMP                          rho_smooth_cutoff_range_2,rho)&
-!$OMP                    PRIVATE(k,j,i,my_rho,my_rho_n,my_rho_n2)
+!$OMP                    PRIVATE(k,j,i,my_rho,my_rho_n,my_rho_n2) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -994,7 +996,7 @@ CONTAINS
 !$OMP              PARALLEL DO DEFAULT(NONE) SHARED(bo,pot,&
 !$OMP                          rho_cutoff,rho_smooth_cutoff,rho_smooth_cutoff_2,&
 !$OMP                          rho_smooth_cutoff_range_2,rhoa,rhob)&
-!$OMP                    PRIVATE(k,j,i,my_rho,my_rho_n,my_rho_n2)
+!$OMP                    PRIVATE(k,j,i,my_rho,my_rho_n,my_rho_n2) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -1116,6 +1118,7 @@ CONTAINS
       END IF
 
       use_virial = compute_virial
+      virial_xc = 0.0_dp
 
       bo = rho_r(1)%pw%pw_grid%bounds_local
       npoints = (bo(2, 1) - bo(1, 1) + 1)*(bo(2, 2) - bo(1, 2) + 1)*(bo(2, 3) - bo(1, 3) + 1)
@@ -1235,7 +1238,7 @@ CONTAINS
          IF (lsd) THEN ! otherwise already taken care in vxc recovery
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO DEFAULT(NONE) SHARED(bo,vxc_rho,deriv_data)&
-!$OMP         PRIVATE(k,j,i)
+!$OMP         PRIVATE(k,j,i) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -1262,7 +1265,7 @@ CONTAINS
 
          IF (ASSOCIATED(norm_drho)) THEN
 !$OMP         PARALLEL DO DEFAULT(NONE) SHARED(bo,deriv_data,norm_drho,drho_cutoff)&
-!$OMP                     PRIVATE(k,j,i)
+!$OMP                     PRIVATE(k,j,i) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -1272,7 +1275,7 @@ CONTAINS
             END DO
          ELSE IF (ASSOCIATED(drho)) THEN
 !$OMP         PARALLEL DO DEFAULT(NONE) SHARED(bo,deriv_data,drho,drho_cutoff)&
-!$OMP                     PRIVATE(k,j,i,ndr)
+!$OMP                     PRIVATE(k,j,i,ndr) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -1287,7 +1290,7 @@ CONTAINS
             CPASSERT(ASSOCIATED(drhoa))
             CPASSERT(ASSOCIATED(drhob))
 !$OMP         PARALLEL DO DEFAULT(NONE) SHARED(bo,deriv_data,drhoa,drhob,drho_cutoff)&
-!$OMP                     PRIVATE(k,j,i,ndr)
+!$OMP                     PRIVATE(k,j,i,ndr) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -1330,7 +1333,7 @@ CONTAINS
                               use_data=REALDATA3D, in_space=REALSPACE)
                CPASSERT(ASSOCIATED(drho(idir)%array))
 !$OMP            PARALLEL DO DEFAULT(NONE) SHARED(bo,deriv_data,drho,idir)&
-!$OMP                        PRIVATE(k,j,i)
+!$OMP                        PRIVATE(k,j,i) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -1368,7 +1371,7 @@ CONTAINS
                                       use_data=REALDATA3D, in_space=REALSPACE)
 !$OMP            PARALLEL DO DEFAULT(NONE) SHARED(bo,deriv_data,&
 !$OMP                           pw_to_deriv_rho,drhoa,drhob,idir)&
-!$OMP                        PRIVATE(k,j,i,my_rho)
+!$OMP                        PRIVATE(k,j,i,my_rho) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -1409,7 +1412,7 @@ CONTAINS
 
                IF (ASSOCIATED(norm_drho_spin)) THEN
 !$OMP               PARALLEL DO DEFAULT(NONE) SHARED(bo,deriv_data,norm_drho_spin,drho_cutoff)&
-!$OMP                           PRIVATE(k,j,i)
+!$OMP                           PRIVATE(k,j,i) COLLAPSE(3)
                   DO k = bo(1, 3), bo(2, 3)
                      DO j = bo(1, 2), bo(2, 2)
                         DO i = bo(1, 1), bo(2, 1)
@@ -1420,7 +1423,7 @@ CONTAINS
                   END DO
                ELSE
 !$OMP               PARALLEL DO DEFAULT(NONE) SHARED(bo,deriv_data,drho_spin,drho_cutoff)&
-!$OMP                           PRIVATE(k,j,i, ndr)
+!$OMP                           PRIVATE(k,j,i, ndr) COLLAPSE(3)
                   DO k = bo(1, 3), bo(2, 3)
                      DO j = bo(1, 2), bo(2, 2)
                         DO i = bo(1, 1), bo(2, 1)
@@ -1464,7 +1467,7 @@ CONTAINS
                   CPASSERT(ASSOCIATED(vxc_to_deriv(ispin)%pw%cr3d))
 !$OMP               PARALLEL DO DEFAULT(NONE) SHARED(bo,deriv_data,drho_spin,&
 !$OMP                           ispin,idir,vxc_to_deriv,drho_cutoff)&
-!$OMP                           PRIVATE(k,j,i)
+!$OMP                           PRIVATE(k,j,i) COLLAPSE(3)
                   DO k = bo(1, 3), bo(2, 3)
                      DO j = bo(1, 2), bo(2, 2)
                         DO i = bo(1, 1), bo(2, 1)
@@ -1625,7 +1628,7 @@ CONTAINS
                CALL pw_zero(pw_to_deriv(idir)%pw)
 !$OMP          PARALLEL DO DEFAULT(NONE) SHARED(bo,deriv_data,&
 !$OMP                         pw_to_deriv,idir)&
-!$OMP                      PRIVATE(k,j,i)
+!$OMP                      PRIVATE(k,j,i) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -2104,7 +2107,7 @@ CONTAINS
          deriv_att => xc_dset_get_derivative(deriv_set, "(rhoa)(rhoa)")
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
-!$OMP         PARALLEL DO PRIVATE(k,j,i) SHARED(v_xc,bo,rho1a,deriv_data) DEFAULT(NONE)
+!$OMP         PARALLEL DO PRIVATE(k,j,i) SHARED(v_xc,bo,rho1a,deriv_data) DEFAULT(NONE) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2119,7 +2122,7 @@ CONTAINS
             deriv_att => xc_dset_get_derivative(deriv_set, "(rhob)(rhob)")
             IF (ASSOCIATED(deriv_att)) THEN
                CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
-!$OMP            PARALLEL DO PRIVATE(k,j,i) DEFAULT(NONE) SHARED(bo,v_xc,deriv_data,rho1b)
+!$OMP            PARALLEL DO PRIVATE(k,j,i) DEFAULT(NONE) SHARED(bo,v_xc,deriv_data,rho1b) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -2134,7 +2137,7 @@ CONTAINS
          deriv_att => xc_dset_get_derivative(deriv_set, "(rhoa)(rhob)")
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
-!$OMP         PARALLEL DO PRIVATE(k,j,i) DEFAULT(NONE) SHARED(bo,v_xc,deriv_data,rho1b,rho1a,nspins,fac)
+!$OMP         PARALLEL DO PRIVATE(k,j,i) DEFAULT(NONE) SHARED(bo,v_xc,deriv_data,rho1b,rho1a,nspins,fac) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2155,7 +2158,7 @@ CONTAINS
          deriv_att => xc_dset_get_derivative(deriv_set, "(rhoa)(norm_drhoa)")
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
-!$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE) SHARED(drhoa,drho1a,v_xc,tmp_a,bo,deriv_data,rho1a)
+!$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE) SHARED(drhoa,drho1a,v_xc,tmp_a,bo,deriv_data,rho1a) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2176,7 +2179,8 @@ CONTAINS
             deriv_att => xc_dset_get_derivative(deriv_set, "(rhob)(norm_drhob)")
             IF (ASSOCIATED(deriv_att)) THEN
                CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
-!$OMP            PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE) SHARED(v_xc,tmp_b,deriv_data,rho1b,bo,drhob,drho1b)
+!$OMP            PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE) SHARED(v_xc,tmp_b,&
+!$OMP            deriv_data,rho1b,bo,drhob,drho1b) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -2197,7 +2201,8 @@ CONTAINS
          deriv_att => xc_dset_get_derivative(deriv_set, "(rhoa)(norm_drhob)")
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
-!$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE) SHARED(bo,drhob,drho1b,v_xc,tmp_b,deriv_data,nspins,rho1a,fac)
+!$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE) SHARED(bo,drhob,&
+!$OMP         drho1b,v_xc,tmp_b,deriv_data,nspins,rho1a,fac) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2222,7 +2227,8 @@ CONTAINS
          deriv_att => xc_dset_get_derivative(deriv_set, "(rhob)(norm_drhoa)")
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
-!$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE) SHARED(bo,nspins,drhoa,drho1a,v_xc,tmp_a,fac,deriv_data,rho1b)
+!$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE) SHARED(bo,nspins,&
+!$OMP         drhoa,drho1a,v_xc,tmp_a,fac,deriv_data,rho1b) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2248,7 +2254,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE)&
-!$OMP           SHARED(bo,drhob,drho1a,deriv_data,v_xc,drhoa,drho1b,tmp_a,tmp_b,tmp_c,nspins,rho1a,fac)
+!$OMP           SHARED(bo,drhob,drho1a,deriv_data,v_xc,drhoa,drho1b,tmp_a,tmp_b,tmp_c,nspins,rho1a,fac) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2286,7 +2292,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE) &
-!$OMP         SHARED(bo,nspins,drhob,drho1a,deriv_data,drhoa,drho1b,tmp_a,tmp_b,tmp_c,fac)
+!$OMP         SHARED(bo,nspins,drhob,drho1a,deriv_data,drhoa,drho1b,tmp_a,tmp_b,tmp_c,fac) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2336,7 +2342,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir)  DEFAULT(NONE) &
-!$OMP         SHARED(bo,nspins,drhob,drho1a,deriv_data,drhoa,drho1b,tmp_a,tmp_b,tmp_c,fac,v_xc,rho1b)
+!$OMP         SHARED(bo,nspins,drhob,drho1a,deriv_data,drhoa,drho1b,tmp_a,tmp_b,tmp_c,fac,v_xc,rho1b) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2365,7 +2371,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir)  DEFAULT(NONE) &
-!$OMP         SHARED(bo,nspins,drhob,drho1a,deriv_data,drhoa,drho1b,tmp_a,tmp_b,tmp_c,fac)
+!$OMP         SHARED(bo,nspins,drhob,drho1a,deriv_data,drhoa,drho1b,tmp_a,tmp_b,tmp_c,fac) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2406,7 +2412,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir)  DEFAULT(NONE) &
-!$OMP         SHARED(bo,nspins,drhoa,drho1a,deriv_data,tmp_a)
+!$OMP         SHARED(bo,nspins,drhoa,drho1a,deriv_data,tmp_a) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2426,7 +2432,7 @@ CONTAINS
             IF (ASSOCIATED(deriv_att)) THEN
                CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP            PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE)&
-!$OMP            SHARED(drhob,drho1b,tmp_b,deriv_data,bo)
+!$OMP            SHARED(drhob,drho1b,tmp_b,deriv_data,bo) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -2446,7 +2452,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir)  DEFAULT(NONE) &
-!$OMP         SHARED(bo,nspins,drhob,drho1a,deriv_data,drhoa,drho1b,tmp_a,tmp_b,fac)
+!$OMP         SHARED(bo,nspins,drhob,drho1a,deriv_data,drhoa,drho1b,tmp_a,tmp_b,fac) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2477,7 +2483,7 @@ CONTAINS
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
             CALL xc_derivative_get(deriv_att, deriv_data=e_drhoa)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE)&
-!$OMP         SHARED(bo,drhoa,drho1a,gradient_cut,rho_set,tmp_a,deriv_data)
+!$OMP         SHARED(bo,drhoa,drho1a,gradient_cut,rho_set,tmp_a,deriv_data) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2501,7 +2507,7 @@ CONTAINS
                CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
                CALL xc_derivative_get(deriv_att, deriv_data=e_drhob)
 !$OMP            PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE) &
-!$OMP            SHARED(bo,drhob,drho1b,gradient_cut,rho_set,tmp_b,deriv_data)
+!$OMP            SHARED(bo,drhob,drho1b,gradient_cut,rho_set,tmp_b,deriv_data) COLLAPSE(3)
                DO k = bo(1, 3), bo(2, 3)
                   DO j = bo(1, 2), bo(2, 2)
                      DO i = bo(1, 1), bo(2, 1)
@@ -2524,7 +2530,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE)&
-!$OMP         SHARED(bo,nspins,drhoa,drho1a,drhob,drho1b,tmp_c,fac,deriv_data)
+!$OMP         SHARED(bo,nspins,drhoa,drho1a,drhob,drho1b,tmp_c,fac,deriv_data) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2558,7 +2564,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,dr1dr,idir) DEFAULT(NONE)&
-!$OMP         SHARED(bo,nspins,drhoa,drhob,drho1a,drho1b,tmp_c,fac,deriv_data,rho_set,gradient_cut)
+!$OMP         SHARED(bo,nspins,drhoa,drhob,drho1a,drho1b,tmp_c,fac,deriv_data,rho_set,gradient_cut) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2604,7 +2610,7 @@ CONTAINS
             IF (my_gapw) THEN
 !$OMP            PARALLEL DO PRIVATE(ia,idir,ispin,ir) DEFAULT(NONE) &
 !$OMP            SHARED(bo,nspins,vxg,drhoa,drhob,tmp_a,tmp_b,tmp_c, &
-!$OMP                   e_drhoa,e_drhob,e_norm_drho,drho1a,drho1b,fac)
+!$OMP                   e_drhoa,e_drhob,e_norm_drho,drho1a,drho1b,fac) COLLAPSE(3)
                DO ir = bo(1, 2), bo(2, 2)
                   DO ia = bo(1, 1), bo(2, 1)
                      DO idir = 1, 3
@@ -2647,7 +2653,7 @@ CONTAINS
 
                   DO ispin = 1, nspins
 !$OMP                  PARALLEL DO PRIVATE(k,j,i,dr1dr) DEFAULT(NONE) &
-!$OMP                  SHARED(bo,tmp_r,tmp_a,tmp_b,tmp_c,drhoa,drhob,ispin,idir)
+!$OMP                  SHARED(bo,tmp_r,tmp_a,tmp_b,tmp_c,drhoa,drhob,ispin,idir) COLLAPSE(3)
                      DO k = bo(1, 3), bo(2, 3)
                         DO j = bo(1, 2), bo(2, 2)
                            DO i = bo(1, 1), bo(2, 1)
@@ -2662,7 +2668,7 @@ CONTAINS
                   END DO
                   IF (ASSOCIATED(e_drhoa)) THEN
 !$OMP                  PARALLEL DO PRIVATE(k,j,i) DEFAULT(NONE) &
-!$OMP                  SHARED(bo,tmp_r,e_drhoa,drho1a,idir)
+!$OMP                  SHARED(bo,tmp_r,e_drhoa,drho1a,idir) COLLAPSE(3)
                      DO k = bo(1, 3), bo(2, 3)
                         DO j = bo(1, 2), bo(2, 2)
                            DO i = bo(1, 1), bo(2, 1)
@@ -2674,7 +2680,7 @@ CONTAINS
                   END IF
                   IF (nspins /= 1 .AND. ASSOCIATED(e_drhob)) THEN
 !$OMP                  PARALLEL DO PRIVATE(k,j,i) DEFAULT(NONE)&
-!$OMP                  SHARED(bo,tmp_r,e_drhob,drho1b,idir)
+!$OMP                  SHARED(bo,tmp_r,e_drhob,drho1b,idir) COLLAPSE(3)
                      DO k = bo(1, 3), bo(2, 3)
                         DO j = bo(1, 2), bo(2, 2)
                            DO i = bo(1, 1), bo(2, 1)
@@ -2686,7 +2692,7 @@ CONTAINS
                   END IF
                   IF (ASSOCIATED(e_norm_drho)) THEN
 !$OMP                  PARALLEL DO PRIVATE(k,j,i) DEFAULT(NONE)&
-!$OMP                  SHARED(bo,tmp_r,e_norm_drho,drho1a,drho1b,fac,idir,nspins)
+!$OMP                  SHARED(bo,tmp_r,e_norm_drho,drho1a,drho1b,fac,idir,nspins) COLLAPSE(3)
                      DO k = bo(1, 3), bo(2, 3)
                         DO j = bo(1, 2), bo(2, 2)
                            DO i = bo(1, 1), bo(2, 1)
@@ -2806,7 +2812,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i) DEFAULT(NONE) &
-!$OMP         SHARED(bo,v_xc,deriv_data,rho1)
+!$OMP         SHARED(bo,v_xc,deriv_data,rho1) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2821,7 +2827,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,idir,dr1dr) DEFAULT(NONE)&
-!$OMP         SHARED(bo,drho,drho1,v_xc,deriv_data,v_drho,rho1)
+!$OMP         SHARED(bo,drho,drho1,v_xc,deriv_data,v_drho,rho1) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2841,7 +2847,7 @@ CONTAINS
          IF (ASSOCIATED(deriv_att)) THEN
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,idir,dr1dr) DEFAULT(NONE)&
-!$OMP         SHARED(bo,drho,drho1,v_drho,deriv_data)
+!$OMP         SHARED(bo,drho,drho1,v_drho,deriv_data) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2860,7 +2866,7 @@ CONTAINS
             CALL xc_derivative_get(deriv_att, deriv_data=deriv_data)
             CALL xc_derivative_get(deriv_att, deriv_data=e_norm_drho)
 !$OMP         PARALLEL DO PRIVATE(k,j,i,idir,dr1dr) DEFAULT(NONE)&
-!$OMP         SHARED(bo,drho,drho1,gradient_cut,rho_set,v_drho,deriv_data)
+!$OMP         SHARED(bo,drho,drho1,gradient_cut,rho_set,v_drho,deriv_data) COLLAPSE(3)
             DO k = bo(1, 3), bo(2, 3)
                DO j = bo(1, 2), bo(2, 2)
                   DO i = bo(1, 1), bo(2, 1)
@@ -2883,7 +2889,7 @@ CONTAINS
 
                DO idir = 1, 3
 !$OMP               PARALLEL DO PRIVATE(ia,ir) DEFAULT(NONE) &
-!$OMP               SHARED(bo,vxg,drho,v_drho,e_norm_drho,drho1,idir)
+!$OMP               SHARED(bo,vxg,drho,v_drho,e_norm_drho,drho1,idir) COLLAPSE(2)
                   DO ia = bo(1, 1), bo(2, 1)
                      DO ir = bo(1, 2), bo(2, 2)
                         vxg(idir, ia, ir, 1) = drho(idir)%array(ia, ir, 1)*v_drho%pw%cr3d(ia, ir, 1)
@@ -2926,7 +2932,7 @@ CONTAINS
 
                DO idir = 1, 3
 !$OMP               PARALLEL DO PRIVATE(k,j,i) DEFAULT(NONE)&
-!$OMP               SHARED(bo,tmp_r,drho,v_drho,drho1,deriv_data,idir)
+!$OMP               SHARED(bo,tmp_r,drho,v_drho,drho1,deriv_data,idir) COLLAPSE(3)
                   DO k = bo(1, 3), bo(2, 3)
                      DO j = bo(1, 2), bo(2, 2)
                         DO i = bo(1, 1), bo(2, 1)
@@ -3099,7 +3105,7 @@ CONTAINS
             DO idesc = 1, SIZE(split_desc)
                SELECT CASE (split_desc(idesc))
                CASE ("norm_drho")
-!$OMP                 PARALLEL DO PRIVATE(i,j,k) DEFAULT(NONE) SHARED(bo,deriv_att,rho_set,drho_cutoff)
+!$OMP                 PARALLEL DO PRIVATE(i,j,k) DEFAULT(NONE) SHARED(bo,deriv_att,rho_set,drho_cutoff) COLLAPSE(3)
                   DO k = bo(1, 3), bo(2, 3)
                      DO j = bo(1, 2), bo(2, 2)
                         DO i = bo(1, 1), bo(2, 1)
@@ -3109,7 +3115,7 @@ CONTAINS
                      END DO
                   END DO
                CASE ("norm_drhoa")
-!$OMP                 PARALLEL DO PRIVATE(i,j,k) DEFAULT(NONE) SHARED(bo,deriv_att,rho_set,drho_cutoff)
+!$OMP                 PARALLEL DO PRIVATE(i,j,k) DEFAULT(NONE) SHARED(bo,deriv_att,rho_set,drho_cutoff) COLLAPSE(3)
                   DO k = bo(1, 3), bo(2, 3)
                      DO j = bo(1, 2), bo(2, 2)
                         DO i = bo(1, 1), bo(2, 1)
@@ -3119,7 +3125,7 @@ CONTAINS
                      END DO
                   END DO
                CASE ("norm_drhob")
-!$OMP                 PARALLEL DO PRIVATE(i,j,k) DEFAULT(NONE) SHARED(bo,deriv_att,rho_set,drho_cutoff)
+!$OMP                 PARALLEL DO PRIVATE(i,j,k) DEFAULT(NONE) SHARED(bo,deriv_att,rho_set,drho_cutoff) COLLAPSE(3)
                   DO k = bo(1, 3), bo(2, 3)
                      DO j = bo(1, 2), bo(2, 2)
                         DO i = bo(1, 1), bo(2, 1)

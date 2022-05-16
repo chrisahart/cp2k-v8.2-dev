@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*  CP2K: A general program to perform molecular dynamics simulations         */
-/*  Copyright 2000-2020 CP2K developers group <https://cp2k.org>              */
+/*  Copyright 2000-2021 CP2K developers group <https://cp2k.org>              */
 /*                                                                            */
 /*  SPDX-License-Identifier: GPL-2.0-or-later                                 */
 /*----------------------------------------------------------------------------*/
@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include "../../offload/offload_library.h"
 
 // local dependencies
 #include "fft_cuda.h"
@@ -159,6 +161,7 @@ extern "C" int pw_cuda_init() {
   if (is_configured == 0) {
     int version;
     cufftResult_t cufftErr;
+    offload_set_device();
     pw_cuda_device_streams_alloc(&cuda_streams);
     pw_cuda_device_events_alloc(&cuda_events);
     is_configured = 1;
@@ -185,6 +188,7 @@ extern "C" int pw_cuda_init() {
 
 extern "C" void pw_cuda_finalize() {
   if (is_configured == 1) {
+    offload_set_device();
     fftcu_release_();
     pw_cuda_device_streams_release(&cuda_streams);
     pw_cuda_device_events_release(&cuda_events);

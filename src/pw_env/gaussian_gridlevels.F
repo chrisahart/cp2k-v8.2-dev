@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -152,8 +152,10 @@ CONTAINS
             gridlevel = i
          ENDIF
       ENDDO
+      !$OMP CRITICAL(add_counts)
       gridlevel_info%total_count = gridlevel_info%total_count + 1
       gridlevel_info%count(gridlevel) = gridlevel_info%count(gridlevel) + 1
+      !$OMP END CRITICAL(add_counts)
 
    END FUNCTION gaussian_gridlevel
 

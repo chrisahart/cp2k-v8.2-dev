@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -682,7 +682,7 @@ CONTAINS
                         lshell = l(ishell, iset)
                         CALL dgemm("T", "N", nco(lshell), mos(ispin)%mo_set%nmo, &
                                    nso(lshell), 1.0_dp, &
-                                   orbtramat(lshell)%s2c, nso(lshell), &
+                                   orbtramat(lshell)%c2s, nso(lshell), &
                                    smatrix(isgf, 1), nsgf, 0.0_dp, &
                                    cmatrix(icgf, 1), ncgf)
                         icgf = icgf + nco(lshell)

@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -178,6 +178,10 @@ CONTAINS
 !$OMP     END PARALLEL
 
       logger => cp_get_default_logger()
+      ! we could check if tau/grad were consistent, but don't do anything here
+      IF (non_coer > 0) THEN
+         non_coer = 0
+      END IF
 
       CALL timestop(handle)
    END SUBROUTINE tpss_lda_eval

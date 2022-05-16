@@ -3,9 +3,10 @@
 # Directories have been reordered according the execution time needed for a gfortran pdbg run using 2 MPI tasks
 # in case a new directory is added just add it at the top of the list..
 # the order will be regularly checked and modified...
+QS/regtest-grid
 QS/regtest-corr_dipm
 QS/regtest-admm-gapw                                        libint
-QS/regtest-rs-dhft                                          libint
+QS/regtest-rs-dhft                                          libint libxc
 QS/regtest-sos-mp2-lr                                       libint
 QS/regtest-rpa-lr                                           libint
 QS/regtest-mp2-lr                                           libint
@@ -76,7 +77,7 @@ QS/regtest-hfx-block                                        libint
 QS/regtest-ls-rtp
 QMMM/SE/regtest-force-mixing
 QS/regtest-xc
-QS/regtest-hfx-wfn-fitting                                  libint
+QS/regtest-hfx-wfn-fitting                                  libint libxc
 QS/regtest-tddfpt
 QS/regtest-tddfpt-stda                                      libint
 QS/regtest-libxc                                            libxc libint
@@ -131,7 +132,7 @@ Fist/regtest-pol
 Fist/regtest-6
 QS/regtest-ps-implicit-1-2                                  fftw3
 SE/regtest-2-1
-QS/regtest-dft-vdw-corr-2                                   libxc
+QS/regtest-dft-vdw-corr-2                                   libxc libint
 QS/regtest-sparsity                                         libint
 QS/regtest-admm-2                                           libint
 QS/regtest-double-hybrid-2                                  libint
@@ -273,3 +274,5 @@ QS/regtest-hfx-ri                                           libint
 Fist/regtest-gal19
 NNP/regtest-1
 QS/regtest-as-1                                             libint
+QS/regtest-spgr                                             spglib
+Fist/regtest-spgr                                           spglib

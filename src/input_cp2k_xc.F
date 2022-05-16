@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -14,9 +14,8 @@
 MODULE input_cp2k_xc
    USE bibliography,                    ONLY: &
         Becke1988, Becke1997, BeckeRoussel1989, Goedecker1996, Grimme2006, Grimme2010, Grimme2011, &
-        Heyd2004, Kruse2012, Lee1988, Lehtola2018, Marques2012, Ortiz1994, Paziani2006, &
-        Perdew1981, Perdew1996, Perdew2008, Proynov2007, Tao2003, Toulouse2004, Tran2013, &
-        Vosko1980, Wellendorff2012, Zhang1998
+        Heyd2004, Kruse2012, Lee1988, Lehtola2018, Marques2012, Ortiz1994, Perdew1981, Perdew1996, &
+        Perdew2008, Proynov2007, Tao2003, Tran2013, Vosko1980, Wellendorff2012, Zhang1998
    USE cp_output_handling,              ONLY: add_last_numeric,&
                                               cp_print_key_section_create,&
                                               high_print_level
@@ -51,6 +50,7 @@ MODULE input_cp2k_xc
         xc_old_f_routine, xc_pbe_orig, xc_pbe_rev, xc_pbe_sol, xc_rho_nn10, xc_rho_nn50, &
         xc_rho_no_smooth, xc_rho_spline2_smooth, xc_rho_spline3_smooth, xc_test_lsd_f_routine, &
         xgga_b88x, xgga_ev93, xgga_opt, xgga_pbex, xgga_pw86, xgga_pw91, xgga_revpbe
+   USE xc_libxc,                        ONLY: libxc_add_sections
 #include "./base/base_uses.f90"
 
    IMPLICIT NONE
@@ -76,7 +76,8 @@ CONTAINS
 
       CPASSERT(.NOT. ASSOCIATED(section))
       CALL section_create(section, __LOCATION__, name="xc_functional", &
-                          description="The xc functional to use", &
+                          description="The xc functional to use. For Functionals "// &
+                          "of the LibXC library use the appropriate section.", &
                           n_keywords=0, n_subsections=4, repeats=.FALSE., &
                           citations=(/Ortiz1994, Becke1988, Perdew1996, Zhang1998, Lee1988, &
                                       Heyd2004, Vosko1980, Goedecker1996, Perdew1981, &
@@ -282,6 +283,8 @@ CONTAINS
                                 "FUNCTIONAL GGA_K_LLP")
       CALL section_add_subsection(section, subsection)
       CALL section_release(subsection)
+
+      CALL libxc_add_sections(section)
 
       CALL section_create(subsection, __LOCATION__, name="CS1", &
                           description="Uses the CS1 functional", &
@@ -727,45 +730,6 @@ CONTAINS
       CALL section_add_subsection(section, subsection)
       CALL section_release(subsection)
 
-      CALL section_create(subsection, __LOCATION__, name="SRLDA", &
-                          description="Uses the short-range LDA functional", &
-                          n_keywords=0, n_subsections=0, repeats=.FALSE., &
-                          citations=(/Paziani2006, Toulouse2004/))
-      CALL keyword_create(keyword, __LOCATION__, name="_SECTION_PARAMETERS_", &
-                          description="activates the functional", &
-                          lone_keyword_l_val=.TRUE., default_l_val=.FALSE.)
-      CALL section_add_keyword(subsection, keyword)
-      CALL keyword_release(keyword)
-      CALL keyword_create(keyword, __LOCATION__, name="scale_x", &
-                          description="scales the exchange part of the functional", &
-                          default_r_val=1._dp)
-      CALL section_add_keyword(subsection, keyword)
-      CALL keyword_release(keyword)
-      CALL keyword_create(keyword, __LOCATION__, name="scale_c", &
-                          description="scales the correlation part of the functional", &
-                          default_r_val=1._dp)
-      CALL section_add_keyword(subsection, keyword)
-      CALL keyword_release(keyword)
-      CALL keyword_create(keyword, __LOCATION__, name="omega", &
-                          description="provide the range-separation parameter of the functional", &
-                          default_r_val=1._dp)
-      CALL section_add_keyword(subsection, keyword)
-      CALL keyword_release(keyword)
-      CALL keyword_create(keyword, __LOCATION__, name="PARAMETRIZATION", &
-                          description="Which one parametrizations of the underlying PW92 functional should be used", &
-                          usage="PARAMETRIZATION DMC", &
-                          enum_c_vals=(/ &
-                          "ORIGINAL", &
-                          "DMC     ", &
-                          "VMC     "/), &
-                          enum_i_vals=(/c_pw92, c_pw92dmc, c_pw92vmc/), &
-                          default_i_val=c_pw92)
-      CALL section_add_keyword(subsection, keyword)
-      CALL keyword_release(keyword)
-
-      CALL section_add_subsection(section, subsection)
-      CALL section_release(subsection)
-
    END SUBROUTINE create_xc_fun_section
 
 ! **************************************************************************************************
@@ -789,7 +753,9 @@ CONTAINS
                           citations=(/Marques2012, Lehtola2018/))
       CALL keyword_create(keyword, __LOCATION__, name="_SECTION_PARAMETERS_", &
                           description="activates functionals from libxc library", &
-                          lone_keyword_l_val=.TRUE., default_l_val=.FALSE.)
+                          lone_keyword_l_val=.TRUE., default_l_val=.FALSE., &
+                          deprecation_notice="Instead of &"//name//" with set keyword "// &
+                          "FUNCTIONAL <FUNCTIONAL_KEY> use the section &<FUNCTIONAL_KEY>.")
       CALL section_add_keyword(section, keyword)
       CALL keyword_release(keyword)
       CALL keyword_create(keyword, __LOCATION__, name="FUNCTIONAL", &
@@ -983,7 +949,8 @@ CONTAINS
       CALL section_add_keyword(subsection, keyword)
       CALL keyword_release(keyword)
       CALL keyword_create(keyword, __LOCATION__, name="LONG_RANGE_CORRECTION", &
-                          description="Calculate a long range correction to the DFT-D3 model", &
+                          description="Calculate a long range correction to the DFT-D3 model."// &
+                          " WARNING: Use with care! Only for isotropic dense systems.", &
                           usage="LONG_RANGE_CORRECTION", default_l_val=.FALSE., &
                           lone_keyword_l_val=.TRUE.)
       CALL section_add_keyword(subsection, keyword)

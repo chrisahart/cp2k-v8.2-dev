@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*  CP2K: A general program to perform molecular dynamics simulations         */
-/*  Copyright 2000-2020 CP2K developers group <https://cp2k.org>              */
+/*  Copyright 2000-2021 CP2K developers group <https://cp2k.org>              */
 /*                                                                            */
 /*  SPDX-License-Identifier: GPL-2.0-or-later                                 */
 /*----------------------------------------------------------------------------*/
@@ -38,7 +38,7 @@
  ******************************************************************************/
 #ifndef __NO_IPI_DRIVER
 
-#define _XOPEN_SOURCE 700 /* Enable POSIX 2008/13 */
+#define _POSIX_C_SOURCE 200809L
 
 #include <math.h>
 #include <netdb.h>

@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -67,9 +67,6 @@ MODULE xc_derivatives
                                               xc_rho_cflags_type
    USE xc_rho_set_types,                ONLY: xc_rho_set_get,&
                                               xc_rho_set_type
-   USE xc_sr_lda,                       ONLY: sr_lda_eval,&
-                                              sr_lda_info,&
-                                              sr_lsd_eval
    USE xc_tfw,                          ONLY: tfw_lda_eval,&
                                               tfw_lda_info,&
                                               tfw_lsd_eval,&
@@ -320,10 +317,13 @@ CONTAINS
          ELSE
             CALL xbr_pbe_lda_hole_tc_lr_lda_info(reference, shortform, needs, max_deriv)
          END IF
-      CASE ("SRLDA")
-         CALL sr_lda_info(reference, shortform, lsd, needs, max_deriv)
       CASE default
-         CPABORT("unknown functional '"//TRIM(functional%section%name)//"'")
+         ! If the functional has not been implemented internally, it's from LibXC
+         IF (lsd) THEN
+            CALL libxc_lsd_info(functional, reference, shortform, needs, max_deriv, print_warn)
+         ELSE
+            CALL libxc_lda_info(functional, reference, shortform, needs, max_deriv, print_warn)
+         ENDIF
       END SELECT
    END SUBROUTINE xc_functional_get_info
 
@@ -544,14 +544,13 @@ CONTAINS
             CALL xbr_pbe_lda_hole_tc_lr_lda_eval(rho_set, deriv_set, deriv_order, &
                                                  functional)
          END IF
-      CASE ("SRLDA")
-         IF (lsd) THEN
-            CALL sr_lsd_eval(rho_set, deriv_set, deriv_order, functional)
-         ELSE
-            CALL sr_lda_eval(rho_set, deriv_set, deriv_order, functional)
-         END IF
       CASE default
-         CPABORT("unknown functional '"//TRIM(functional%section%name)//"'")
+         ! If functional not natively supported, ask LibXC
+         IF (lsd) THEN
+            CALL libxc_lsd_eval(rho_set, deriv_set, deriv_order, functional)
+         ELSE
+            CALL libxc_lda_eval(rho_set, deriv_set, deriv_order, functional)
+         ENDIF
       END SELECT
 
       CALL timestop(handle)

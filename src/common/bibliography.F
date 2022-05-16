@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -13,19 +13,16 @@
 !>      of documentation.
 !>
 !>      reference_manager.F provides an easy way to cite these references from the code
-!>      (e.g. whenever the relevant part of the code is executed)
+!>      (e.g., whenever the relevant part of the code is executed)
 !>      and to add citations to the input
-!>      at the end of the run a bibliography is printed that can be used e.g. in papers
+!>      at the end of the run a bibliography is printed that can be used, e.g., in papers
 !> \note
 !>      references need to be input using the ISI citation format, because it is
 !>      uniform, easy to parse, and can be exported for example from web of science.
 !>      (mark the reference, and click 'export to reference software', open the resulting file)
 !>      Furthermore, it can be easily converted to and from using the bibutils tools
 !>      a collection of easy to use conversion programs that can be found at
-!>      http://www.scripps.edu/~cdputnam/software/bibutils/ by Chris Putnam
-!> \par History
-!>      08.2007 [Joost VandeVondele] Created
-!>      01.2014 [Lianheng Tong] Added Kantorovich2008, Kantorovich2008a
+!>      https://ctan.org/pkg/bibutils by Chris Putnam
 !> \author Joost VandeVondele
 ! **************************************************************************************************
 MODULE bibliography
@@ -87,11 +84,12 @@ MODULE bibliography
                             Brieuc2016, Barca2018, Scheiber2018, Huang2011, Heaton_Burgess2007, &
                             Schuett2018, Holmberg2018, Togo2018, Staub2019, Grimme2013, Grimme2016, &
                             Grimme2017, Kondov2007, Clabaut2020, &
-                            Ren2011, Ren2013, Cohen2000, Rogers2002, Filippetti2000, Paziani2006, &
-                            Toulouse2004, Limpanuparb2011, Martin2003, Yin2017, Goerigk2017, &
+                            Ren2011, Ren2013, Cohen2000, Rogers2002, Filippetti2000, &
+                            Limpanuparb2011, Martin2003, Yin2017, Goerigk2017, &
                             Wilhelm2016a, Wilhelm2016b, Wilhelm2017, Wilhelm2018, Lass2018, cp2kqs2020, &
                             Behler2007, Behler2011, Schran2020a, Schran2020b, &
-                            Rycroft2009, Thomas2015, Brehm2018, Brehm2020, Shigeta2001
+                            Rycroft2009, Thomas2015, Brehm2018, Brehm2020, Shigeta2001, Heinecke2016, &
+                            Brehm2021
 
 CONTAINS
 
@@ -4308,77 +4306,6 @@ CONTAINS
                          "ER"), &
                          DOI="10.1103/PhysRevB.61.8433")
 
-      CALL add_reference(key=Paziani2006, ISI_record=s2a( &
-                         "AU Paziani, S", &
-                         "   Moroni, S", &
-                         "   Gori-Giorgi, P", &
-                         "   Bachelet, GB", &
-                         "AF Paziani, S", &
-                         "   Moroni, S", &
-                         "   Gori-Giorgi, P", &
-                         "   Bachelet, GB", &
-                         "TI Local-spin-density functional for multideterminant density functional", &
-                         "   theory", &
-                         "SO PHYSICAL REVIEW B", &
-                         "NR 62", &
-                         "TC 64", &
-                         "Z9 64", &
-                         "PU AMER PHYSICAL SOC", &
-                         "PI COLLEGE PK", &
-                         "PA ONE PHYSICS ELLIPSE, COLLEGE PK, MD 20740-3844 USA", &
-                         "SN 2469-9950", &
-                         "EI 2469-9969", &
-                         "J9 PHYS REV B", &
-                         "JI Phys. Rev. B", &
-                         "PD APR", &
-                         "PY 2006", &
-                         "VL 73", &
-                         "IS 15", &
-                         "AR 155111", &
-                         "DI 10.1103/PhysRevB.73.155111", &
-                         "PG 9", &
-                         "SC Materials Science; Physics", &
-                         "GA 037OA", &
-                         "UT WOS:000237155100035", &
-                         "ER"), &
-                         DOI="10.1103/PhysRevB.73.155111")
-
-      CALL add_reference(key=Toulouse2004, ISI_record=s2a( &
-                         "AU Toulouse, J", &
-                         "   Savin, A", &
-                         "   Flad, HJ", &
-                         "AF Toulouse, J", &
-                         "   Savin, A", &
-                         "   Flad, HJ", &
-                         "TI Short-range exchange-correlation energy of a uniform electron gas with", &
-                         "   modified electron-electron interaction", &
-                         "SO INTERNATIONAL JOURNAL OF QUANTUM CHEMISTRY", &
-                         "CT 43rd International Symposium on Theory and Computations in Molecular and", &
-                         "   Materials Sciences, Biology, and Pharmacology", &
-                         "RP Savin, A (reprint author), CNRS, Chim Theor Lab, 4 Pl Jussieu, F-75252 Paris, France.", &
-                         "NR 28", &
-                         "TC 90", &
-                         "Z9 90", &
-                         "PU WILEY-BLACKWELL", &
-                         "PI HOBOKEN", &
-                         "PA 111 RIVER ST, HOBOKEN 07030-5774, NJ USA", &
-                         "SN 0020-7608", &
-                         "EI 1097-461X", &
-                         "J9 INT J QUANTUM CHEM", &
-                         "JI Int. J. Quantum Chem.", &
-                         "PD DEC 20", &
-                         "PY 2004", &
-                         "VL 100", &
-                         "IS 6", &
-                         "BP 1047", &
-                         "EP 1056", &
-                         "DI 10.1002/qua.20259", &
-                         "PG 10", &
-                         "GA 866QS", &
-                         "UT WOS:000224788600025", &
-                         "ER"), &
-                         DOI="10.1002/qua.20259")
-
       CALL add_reference(key=Limpanuparb2011, ISI_record=s2a( &
                          "AU Limpanuparb, Taweetham", &
                          "   Gill, Peter M. W.", &
@@ -4687,6 +4614,48 @@ CONTAINS
                          "IS 4-5", &
                          "ER"), &
                          DOI="10.1002/qua.1543")
+
+      CALL add_reference(key=Heinecke2016, ISI_record=s2a( &
+                         "PT S", &
+                         "AU Heinecke, A", &
+                         "   Henry, G", &
+                         "   Hutchinson, M", &
+                         "   Pabst, H", &
+                         "TI LIBXSMM: Accelerating Small Matrix Multiplications", &
+                         "   by Runtime Code Generation", &
+                         "CT SC'16: International Conference for High Performance Computing,", &
+                         "   Networking, Storage, and Analysis", &
+                         "SO Proceedings of Intl. Supercomputing Conference", &
+                         "CL Salt Lake City, UT, USA", &
+                         "PU IEEE", &
+                         "EI 2167-4337", &
+                         "UT 16757864", &
+                         "PY 2016", &
+                         "BP 981", &
+                         "EP 991", &
+                         "DI 10.1109/SC.2016.83", &
+                         "ER"), &
+                         DOI="10.1109/SC.2016.83")
+
+      CALL add_reference(key=Brehm2021, ISI_record=s2a( &
+                         "TY JOUR", &
+                         "PT J", &
+                         "AU Brehm, Martin", &
+                         "   Thomas, Martin", &
+                         "TI Optimized Atomic Partial Charges and Radii Defined by Radical Voronoi", &
+                         "   Tessellation of Bulk Phase Simulations", &
+                         "SO Molecules", &
+                         "JF Molecules", &
+                         "JO Molecules", &
+                         "SN 1420-3049", &
+                         "IS 7", &
+                         "PY 2021", &
+                         "VL 26", &
+                         "SP 1875", &
+                         "DI 10.3390/molecules26071875", &
+                         "PB MDPI", &
+                         "ER"), &
+                         DOI="10.3390/molecules26071875")
 
    END SUBROUTINE add_all_references
 

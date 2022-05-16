@@ -1,6 +1,6 @@
 !--------------------------------------------------------------------------------------------------!
 !   CP2K: A general program to perform molecular dynamics simulations                              !
-!   Copyright 2000-2020 CP2K developers group <https://cp2k.org>                                   !
+!   Copyright 2000-2021 CP2K developers group <https://cp2k.org>                                   !
 !                                                                                                  !
 !   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
 !--------------------------------------------------------------------------------------------------!
@@ -876,8 +876,14 @@ CONTAINS
       ENDIF
       ! set repulsive energy
       erep = erep + exb + enonbonded
-      IF (xb_inter) energy%xtb_xb_inter = exb
-      IF (do_nonbonded) energy%xtb_nonbonded = enonbonded
+      IF (xb_inter) THEN
+         CALL mp_sum(exb, para_env%group)
+         energy%xtb_xb_inter = exb
+      END IF
+      IF (do_nonbonded) THEN
+         CALL mp_sum(enonbonded, para_env%group)
+         energy%xtb_nonbonded = enonbonded
+      END IF
       CALL mp_sum(erep, para_env%group)
       energy%repulsive = erep
 
@@ -1319,8 +1325,6 @@ CONTAINS
       TYPE(pair_potential_single_type), POINTER          :: pot
       TYPE(section_vals_type), POINTER                   :: nonbonded_section
 
-!
-
       CALL timeset(routineN, handle)
 
       NULLIFY (nonbonded)
@@ -1443,9 +1447,14 @@ CONTAINS
       LOGICAL                                            :: found
       REAL(KIND=dp)                                      :: ewald_rcut
       TYPE(atomic_kind_type), POINTER                    :: atomic_kind
+      TYPE(cp_logger_type), POINTER                      :: logger
       TYPE(pair_potential_single_type), POINTER          :: pot
 
-      NULLIFY (pot)
+      NULLIFY (pot, logger)
+
+      logger => cp_get_default_logger()
+      iw = cp_logger_get_default_io_unit(logger)
+
       DO ikind = 1, SIZE(atomic_kind_set)
          atomic_kind => atomic_kind_set(ikind)
          CALL get_atomic_kind(atomic_kind=atomic_kind, name=name_atm_a_local)
@@ -1463,9 +1472,9 @@ CONTAINS
                   IF ((TRIM(nonbonded%pot(ingp)%pot%at1) == "*") .OR. &
                       (TRIM(nonbonded%pot(ingp)%pot%at2) == "*")) CYCLE
 
-                  IF (iw > 0) WRITE (iw, *) "TESTING ", TRIM(name_atm_a), TRIM(name_atm_b), &
-                     " with ", TRIM(nonbonded%pot(ingp)%pot%at1), &
-                     TRIM(nonbonded%pot(ingp)%pot%at2)
+                  !IF (iw > 0) WRITE (iw, *) "TESTING ", TRIM(name_atm_a), TRIM(name_atm_b), &
+                  !   " with ", TRIM(nonbonded%pot(ingp)%pot%at1), &
+                  !   TRIM(nonbonded%pot(ingp)%pot%at2)
                   IF ((((name_atm_a) == (nonbonded%pot(ingp)%pot%at1)) .AND. &
                        ((name_atm_b) == (nonbonded%pot(ingp)%pot%at2))) .OR. &
                       (((name_atm_b) == (nonbonded%pot(ingp)%pot%at1)) .AND. &
@@ -1477,7 +1486,7 @@ CONTAINS
                                      "Multiple NONBONDED declaration: "//TRIM(name_atm_a)// &
                                      " and "//TRIM(name_atm_b)//" OVERWRITING! ")
                   END IF
-                  IF (iw > 0) WRITE (iw, *) "    FOUND ", TRIM(name_atm_a), " ", TRIM(name_atm_b)
+                  !IF (iw > 0) WRITE (iw, *) "    FOUND ", TRIM(name_atm_a), " ", TRIM(name_atm_b)
                   found = .TRUE.
                END DO
             ENDIF
