@@ -1364,7 +1364,6 @@ CONTAINS
       TYPE(pw_p_type), DIMENSION(:), POINTER             :: rho_r
       TYPE(qs_force_type), DIMENSION(:), POINTER         :: force
       TYPE(qs_rho_type), POINTER                         :: rho
-      INTEGER, DIMENSION(2, 3)                           :: bo
 
       CALL timeset(routineN, handle)
       NULLIFY (atomic_kind_set, cell, para_env, dft_control, particle_set, &
