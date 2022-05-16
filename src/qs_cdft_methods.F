@@ -1364,6 +1364,7 @@ CONTAINS
       TYPE(pw_p_type), DIMENSION(:), POINTER             :: rho_r
       TYPE(qs_force_type), DIMENSION(:), POINTER         :: force
       TYPE(qs_rho_type), POINTER                         :: rho
+      INTEGER, DIMENSION(2, 3)                           :: bo
 
       CALL timeset(routineN, handle)
       NULLIFY (atomic_kind_set, cell, para_env, dft_control, particle_set, &
@@ -1399,6 +1400,7 @@ CONTAINS
          cdft_control%group(igroup)%integrated = 0.0_dp
       END DO
 
+      bo = group(1)%weight%pw%pw_grid%bounds_local
       lb(1:3) = rho_r(1)%pw%pw_grid%bounds_local(1, 1:3)
       ub(1:3) = rho_r(1)%pw%pw_grid%bounds_local(2, 1:3)
       bo = cdft_control%group(1)%weight%pw%pw_grid%bounds_local
@@ -1417,9 +1419,9 @@ CONTAINS
 
       ! If no Becke Gaussian confinement
       IF (.NOT. ASSOCIATED(cdft_control%becke_control%cavity_mat)) THEN
-         DO k = lb(3), ub(3)
-            DO j = lb(2), ub(2)
-               DO i = lb(1), ub(1)
+        DO k = bo(1, 1), bo(2, 1)
+           DO j = bo(1, 2), bo(2, 2)
+              DO i = bo(1, 3), bo(2, 3)
 
                   ! First check if this grid point should be skipped
                   IF (cdft_control%becke_control%cavity_confine) THEN
@@ -1521,27 +1523,27 @@ CONTAINS
                            IF (cdft_control%type == outer_scf_becke_constraint) THEN
 
                               cdft_control%group(igroup)%integrated(:, iatom) = &
-                                 cdft_control%group(igroup)%integrated(:, iatom) + sign* &
+                                 cdft_control%group(igroup)%integrated(:, iatom) + sign * &
                                  cdft_control%group(igroup)%gradients(3*(iatom - 1) + 1:3*(iatom - 1) + 3, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k)*dvol
 
                            ELSE IF (cdft_control%type == outer_scf_hirshfeld_constraint) THEN
 
                               cdft_control%group(igroup)%integrated(1, iatom) = &
-                                 cdft_control%group(igroup)%integrated(1, iatom) sign* &
-                                 + cdft_control%group(igroup)%gradients_x(iatom, i, j, k) &
+                                 cdft_control%group(igroup)%integrated(1, iatom) + sign * &
+                                 cdft_control%group(igroup)%gradients_x(iatom, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k) &
                                  *dvol
 
                               cdft_control%group(igroup)%integrated(2, iatom) = &
-                                 cdft_control%group(igroup)%integrated(2, iatom) sign* &
-                                 + cdft_control%group(igroup)%gradients_y(iatom, i, j, k) &
+                                 cdft_control%group(igroup)%integrated(2, iatom) + sign * &
+                                 cdft_control%group(igroup)%gradients_y(iatom, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k) &
                                  *dvol
 
                               cdft_control%group(igroup)%integrated(3, iatom) = &
-                                 cdft_control%group(igroup)%integrated(3, iatom) sign* &
-                                 + cdft_control%group(igroup)%gradients_z(iatom, i, j, k) &
+                                 cdft_control%group(igroup)%integrated(3, iatom) + sign * &
+                                 cdft_control%group(igroup)%gradients_z(iatom, i, j, k) &
                                  *rho_r(ispin)%pw%cr3d(i, j, k) &
                                  *dvol
 
