@@ -27,6 +27,12 @@ MODULE qs_cdft_types
                                               qs_outer_scf_type
    USE pw_types,                        ONLY: pw_p_type
    USE qs_cdft_opt_types,               ONLY: cdft_opt_type_release
+   USE input_constants,                 ONLY: cdft_alpha_constraint,&
+                                              cdft_beta_constraint,&
+                                              cdft_charge_constraint,&
+                                              cdft_magnetization_constraint,&
+                                              outer_scf_becke_constraint,&
+                                              outer_scf_hirshfeld_constraint
 #include "./base/base_uses.f90"
 
    IMPLICIT NONE
