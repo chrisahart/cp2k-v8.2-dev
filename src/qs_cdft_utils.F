@@ -772,7 +772,7 @@ CONTAINS
                CALL section_vals_get(becke_constraint_section, explicit=exists)
                IF (.NOT. exists) CPABORT("BECKE_CONSTRAINT section is missing.")
                DO k = 1, nvar
-                  NULLIFY (cdft_control%becke_control%group(k)%gradients)
+                  NULLIFY (cdft_control%group(k)%gradients)
                 END DO
                CALL read_becke_section(cdft_control, becke_constraint_section)
             CASE (outer_scf_hirshfeld_constraint)
@@ -780,9 +780,9 @@ CONTAINS
                CALL section_vals_get(hirshfeld_constraint_section, explicit=exists)
                IF (.NOT. exists) CPABORT("HIRSHFELD_CONSTRAINT section is missing.")
                DO k = 1, nvar
-                  NULLIFY (cdft_control%hirshfeld_control%group(k)%gradients_x)
-                  NULLIFY (cdft_control%hirshfeld_control%group(k)%gradients_y)
-                  NULLIFY (cdft_control%hirshfeld_control%group(k)%gradients_z)
+                  NULLIFY (cdft_control%group(k)%gradients_x)
+                  NULLIFY (cdft_control%group(k)%gradients_y)
+                  NULLIFY (cdft_control%group(k)%gradients_z)
                 END DO
                CALL read_hirshfeld_constraint_section(cdft_control, hirshfeld_constraint_section)
             CASE DEFAULT
