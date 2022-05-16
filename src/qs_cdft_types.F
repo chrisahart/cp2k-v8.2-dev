@@ -332,8 +332,8 @@ CONTAINS
       ! Constraint atom groups
       IF (ASSOCIATED(cdft_control%group)) THEN
          DO i = 1, SIZE(cdft_control%group)
-            IF (ASSOCIATED(cdft_control%group(i)%gradients)) &
-               DEALLOCATE (cdft_control%group(i)%gradients)
+            IF (ASSOCIATED(becke_control%group(i)%gradients)) &
+               DEALLOCATE (becke_control%group(i)%gradients)
          END DO
       END IF
       IF (ASSOCIATED(becke_control%cutoffs)) &
@@ -568,12 +568,12 @@ CONTAINS
       ! Constraint atom groups
       IF (ASSOCIATED(cdft_control%group)) THEN
          DO i = 1, SIZE(cdft_control%group)
-            IF (ASSOCIATED(cdft_control%group(i)%gradients_x)) &
-               DEALLOCATE (cdft_control%group(i)%gradients_x)
-            IF (ASSOCIATED(cdft_control%group(i)%gradients_y)) &
-               DEALLOCATE (cdft_control%group(i)%gradients_y)
-            IF (ASSOCIATED(cdft_control%group(i)%gradients_z)) &
-               DEALLOCATE (cdft_control%group(i)%gradients_z)
+            IF (ASSOCIATED(hirshfeld_control%group(i)%gradients_x)) &
+               DEALLOCATE (hirshfeld_control%group(i)%gradients_x)
+            IF (ASSOCIATED(hirshfeld_control%group(i)%gradients_y)) &
+               DEALLOCATE (hirshfeld_control%group(i)%gradients_y)
+            IF (ASSOCIATED(hirshfeld_control%group(i)%gradients_z)) &
+               DEALLOCATE (hirshfeld_control%group(i)%gradients_z)
          END DO
       END IF
 
