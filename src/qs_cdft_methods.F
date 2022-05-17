@@ -124,7 +124,7 @@ CONTAINS
          ! Integrate the Becke constraint
          CALL cdft_constraint_integrate(qs_env)
          ! Calculate forces
-         IF (calculate_forces) CALL cdft_constraint_force(qs_env)
+         IF (calculate_forces) CALL becke_constraint_force(qs_env)
       END IF
       CALL timestop(handle)
 
@@ -1753,5 +1753,187 @@ CONTAINS
       CALL timestop(handle)
 
    END SUBROUTINE prepare_fragment_constraint
+
+   ! **************************************************************************************************
+!> \brief Calculates atomic forces due to a Becke constraint
+!> \param qs_env the qs_env where to build the gradients
+!> \par   History
+!>        Created 01.2007 [fschiff]
+!>        Extended functionality 12/15-12/16 [Nico Holmberg]
+! **************************************************************************************************
+   SUBROUTINE becke_constraint_force(qs_env)
+      TYPE(qs_environment_type), POINTER                 :: qs_env
+
+      CHARACTER(len=*), PARAMETER :: routineN = 'becke_constraint_force'
+
+      INTEGER                                            :: handle, i, iatom, igroup, ikind, ind(3), &
+                                                            ispin, j, k, natom, nvar
+      INTEGER, ALLOCATABLE, DIMENSION(:)                 :: atom_of_kind, kind_of
+      INTEGER, DIMENSION(2, 3)                           :: bo
+      REAL(kind=dp)                                      :: dvol, eps_cavity, sign, th
+      REAL(kind=dp), ALLOCATABLE, DIMENSION(:)           :: strength
+      REAL(KIND=dp), DIMENSION(:), POINTER               :: cutoffs
+      TYPE(atomic_kind_type), DIMENSION(:), POINTER      :: atomic_kind_set
+      TYPE(becke_constraint_type), POINTER               :: becke_control
+      TYPE(cdft_control_type), POINTER                   :: cdft_control
+      TYPE(cdft_group_type), DIMENSION(:), POINTER       :: group
+      TYPE(cell_type), POINTER                           :: cell
+      TYPE(cp_para_env_type), POINTER                    :: para_env
+      TYPE(dft_control_type), POINTER                    :: dft_control
+      TYPE(particle_type), DIMENSION(:), POINTER         :: particle_set
+      TYPE(pw_p_type), DIMENSION(:), POINTER             :: rho_r
+      TYPE(qs_force_type), DIMENSION(:), POINTER         :: force
+      TYPE(qs_rho_type), POINTER                         :: rho
+
+      CALL timeset(routineN, handle)
+      NULLIFY (atomic_kind_set, cell, para_env, dft_control, particle_set, &
+               rho, rho_r, force, cutoffs, becke_control, group)
+
+      CALL get_qs_env(qs_env, &
+                      atomic_kind_set=atomic_kind_set, &
+                      natom=natom, &
+                      particle_set=particle_set, &
+                      cell=cell, &
+                      rho=rho, &
+                      force=force, &
+                      dft_control=dft_control, &
+                      para_env=para_env)
+      CALL qs_rho_get(rho, rho_r=rho_r)
+
+      th = 1.0e-8_dp
+      cdft_control => dft_control%qs_control%cdft_control
+      becke_control => cdft_control%becke_control
+      group => cdft_control%group
+      nvar = SIZE(cdft_control%target)
+      ALLOCATE (strength(nvar))
+      strength(:) = cdft_control%strength(:)
+      cutoffs => becke_control%cutoffs
+      eps_cavity = becke_control%eps_cavity
+      ALLOCATE (atom_of_kind(natom))
+      ALLOCATE (kind_of(natom))
+
+      CALL get_atomic_kind_set(atomic_kind_set=atomic_kind_set, &
+                               atom_of_kind=atom_of_kind, &
+                               kind_of=kind_of)
+      DO igroup = 1, SIZE(group)
+         ALLOCATE (group(igroup)%integrated(3, natom))
+         group(igroup)%integrated = 0.0_dp
+      END DO
+      bo = group(1)%weight%pw%pw_grid%bounds_local
+      dvol = group(1)%weight%pw%pw_grid%dvol
+
+      IF (.NOT. becke_control%in_memory) &
+         ! Gradients were not precomputed => calculate them now
+         CALL becke_constraint_low(qs_env, just_gradients=.TRUE.)
+      ! Integrate gradients
+      IF (.NOT. ASSOCIATED(becke_control%cavity_mat)) THEN
+         ! No external control
+         DO k = bo(1, 1), bo(2, 1)
+            DO j = bo(1, 2), bo(2, 2)
+               DO i = bo(1, 3), bo(2, 3)
+                  ! First check if this grid point should be skipped
+                  IF (becke_control%cavity_confine) THEN
+                     IF (becke_control%cavity%pw%cr3d(k, j, i) < eps_cavity) CYCLE
+                  END IF
+                  ind = (/k, j, i/)
+                  DO igroup = 1, SIZE(group)
+                     DO iatom = 1, natom
+                        DO ispin = 1, dft_control%nspins
+                           SELECT CASE (group(igroup)%constraint_type)
+                           CASE (cdft_charge_constraint)
+                              sign = 1.0_dp
+                           CASE (cdft_magnetization_constraint)
+                              IF (ispin == 1) THEN
+                                 sign = 1.0_dp
+                              ELSE
+                                 sign = -1.0_dp
+                              END IF
+                           CASE (cdft_alpha_constraint)
+                              sign = 1.0_dp
+                              IF (ispin == 2) CYCLE
+                           CASE (cdft_beta_constraint)
+                              sign = 1.0_dp
+                              IF (ispin == 1) CYCLE
+                           CASE DEFAULT
+                              CPABORT("Unknown constraint type.")
+                           END SELECT
+                           group(igroup)%integrated(:, iatom) = group(igroup)%integrated(:, iatom) + sign* &
+                                                            group(igroup)%gradients(3*(iatom - 1) + 1:3*(iatom - 1) + 3, k, j, i)* &
+                                                                rho_r(ispin)%pw%cr3d(k, j, i)*dvol
+                        END DO
+                     END DO
+                  END DO
+               END DO
+            END DO
+         END DO
+      ELSE
+         DO k = LBOUND(becke_control%cavity_mat, 1), UBOUND(becke_control%cavity_mat, 1)
+            DO j = LBOUND(becke_control%cavity_mat, 2), UBOUND(becke_control%cavity_mat, 2)
+               DO i = LBOUND(becke_control%cavity_mat, 3), UBOUND(becke_control%cavity_mat, 3)
+                  ! First check if this grid point should be skipped
+                  IF (becke_control%cavity_mat(k, j, i) < eps_cavity) CYCLE
+                  DO igroup = 1, SIZE(group)
+                     DO iatom = 1, natom
+                        DO ispin = 1, dft_control%nspins
+                           SELECT CASE (group(igroup)%constraint_type)
+                           CASE (cdft_charge_constraint)
+                              sign = 1.0_dp
+                           CASE (cdft_magnetization_constraint)
+                              IF (ispin == 1) THEN
+                                 sign = 1.0_dp
+                              ELSE
+                                 sign = -1.0_dp
+                              END IF
+                           CASE (cdft_alpha_constraint)
+                              sign = 1.0_dp
+                              IF (ispin == 2) CYCLE
+                           CASE (cdft_beta_constraint)
+                              sign = 1.0_dp
+                              IF (ispin == 1) CYCLE
+                           CASE DEFAULT
+                              CPABORT("Unknown constraint type.")
+                           END SELECT
+                           group(igroup)%integrated(:, iatom) = group(igroup)%integrated(:, iatom) + sign* &
+                                                            group(igroup)%gradients(3*(iatom - 1) + 1:3*(iatom - 1) + 3, k, j, i)* &
+                                                                rho_r(ispin)%pw%cr3d(k, j, i)*dvol
+                        END DO
+                     END DO
+                  END DO
+               END DO
+            END DO
+         END DO
+      END IF
+      IF (.NOT. cdft_control%transfer_pot) THEN
+         DO igroup = 1, SIZE(group)
+            DEALLOCATE (group(igroup)%gradients)
+         END DO
+      END IF
+      DO igroup = 1, SIZE(group)
+         CALL mp_sum(group(igroup)%integrated, para_env%group)
+      END DO
+      ! Update force only on master process. Otherwise force due to constraint becomes multiplied
+      ! by the number of processes when the final force%rho_elec is constructed in qs_force
+      ! by mp_summing [the final integrated(:,:) is distributed on all processors]
+      IF (para_env%ionode) THEN
+         DO igroup = 1, SIZE(group)
+            DO iatom = 1, natom
+               ikind = kind_of(iatom)
+               i = atom_of_kind(iatom)
+               force(ikind)%rho_elec(:, i) = force(ikind)%rho_elec(:, i) + group(igroup)%integrated(:, iatom)*strength(igroup)
+            END DO
+         END DO
+      END IF
+      DEALLOCATE (strength)
+      DEALLOCATE (atom_of_kind)
+      DEALLOCATE (kind_of)
+      DO igroup = 1, SIZE(group)
+         DEALLOCATE (group(igroup)%integrated)
+      END DO
+      NULLIFY (group)
+
+      CALL timestop(handle)
+
+   END SUBROUTINE becke_constraint_force
+
 
 END MODULE qs_cdft_methods
