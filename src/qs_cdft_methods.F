@@ -1449,6 +1449,8 @@ SUBROUTINE cdft_constraint_force(qs_env)
                            CPABORT("Unknown constraint type.")
                         END SELECT
 
+                        IF (para_env%ionode) PRINT *, "sign 1", sign
+
                         IF (cdft_control%type == outer_scf_becke_constraint) THEN
 
                               cdft_control%group(igroup)%integrated(:, iatom) = &
@@ -1495,7 +1497,7 @@ SUBROUTINE cdft_constraint_force(qs_env)
                ! First check if this grid point should be skipped
                IF (cdft_control%becke_control%cavity_mat(k, j, i) < eps_cavity) CYCLE
 
-               DO igroup = 1, SIZE(group)
+               DO igroup = 1, SIZE(cdft_control%group)
                   DO iatom = 1, natom
                      DO ispin = 1, dft_control%nspins
                        SELECT CASE (cdft_control%group(igroup)%constraint_type)
@@ -1516,6 +1518,8 @@ SUBROUTINE cdft_constraint_force(qs_env)
                           CASE DEFAULT
                              CPABORT("Unknown constraint type.")
                           END SELECT
+
+                          IF (para_env%ionode) PRINT *, "sign 2", sign
 
                         ! Integrate gradient of weight function
                         IF (cdft_control%type == outer_scf_becke_constraint) THEN
