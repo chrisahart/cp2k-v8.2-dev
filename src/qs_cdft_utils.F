@@ -383,11 +383,11 @@ CONTAINS
                                                        pab=pab, o1=0, o2=0, &  ! without map_consistent
                                                        prefactor=1.0_dp, cutoff=0.0_dp)
 
-                                                       CALL collocate_pgf_product(0, alpha, 0, 0, 0.0_dp, 0, ra, &
-                                                                                 (/0.0_dp, 0.0_dp, 0.0_dp/), 1.0_dp, &
-                                                                                 pab, 0, 0, rs_cavity, cell, pw_env%cube_info(1), &
-                                                                                 radius=radius, ga_gb_function=GRID_FUNC_AB, &
-                                                                                 use_subpatch=.TRUE., subpatch_pattern=0)
+                     CALL collocate_pgf_product(0, alpha, 0, 0, 0.0_dp, 0, ra, &
+                                                (/0.0_dp, 0.0_dp, 0.0_dp/), 1.0_dp, &
+                                                pab, 0, 0, rs_cavity, cell, pw_env%cube_info(1), &
+                                                radius=radius, ga_gb_function=GRID_FUNC_AB, &
+                                                use_subpatch=.TRUE., subpatch_pattern=0)
                   END IF
                END DO
             END DO
@@ -726,11 +726,10 @@ CONTAINS
       TYPE(qs_control_type), INTENT(INOUT)               :: qs_control
       TYPE(section_vals_type), POINTER                   :: cdft_control_section
 
-      INTEGER                                            :: nvar, k
+      INTEGER                                            :: k, nvar
       LOGICAL                                            :: exists
       TYPE(cdft_control_type), POINTER                   :: cdft_control
-      TYPE(section_vals_type), POINTER                   :: group_section, &
-                                                            becke_constraint_section, &
+      TYPE(section_vals_type), POINTER                   :: becke_constraint_section, group_section, &
                                                             hirshfeld_constraint_section, &
                                                             outer_scf_section, print_section
 
@@ -777,7 +776,7 @@ CONTAINS
                IF (.NOT. exists) CPABORT("BECKE_CONSTRAINT section is missing.")
                DO k = 1, nvar
                   NULLIFY (cdft_control%group(k)%gradients)
-                END DO
+               END DO
                CALL read_becke_section(cdft_control, becke_constraint_section)
             CASE (outer_scf_hirshfeld_constraint)
                hirshfeld_constraint_section => section_vals_get_subs_vals(cdft_control_section, "HIRSHFELD_CONSTRAINT")
@@ -787,7 +786,7 @@ CONTAINS
                   NULLIFY (cdft_control%group(k)%gradients_x)
                   NULLIFY (cdft_control%group(k)%gradients_y)
                   NULLIFY (cdft_control%group(k)%gradients_z)
-                END DO
+               END DO
                CALL read_hirshfeld_constraint_section(cdft_control, hirshfeld_constraint_section)
             CASE DEFAULT
                CPABORT("Unknown constraint type.")

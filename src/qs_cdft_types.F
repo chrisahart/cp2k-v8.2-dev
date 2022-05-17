@@ -18,6 +18,8 @@ MODULE qs_cdft_types
    USE hirshfeld_types,                 ONLY: hirshfeld_type,&
                                               release_hirshfeld_type
    USE input_constants,                 ONLY: becke_cutoff_global,&
+                                              outer_scf_becke_constraint,&
+                                              outer_scf_hirshfeld_constraint,&
                                               outer_scf_none,&
                                               radius_single,&
                                               shape_function_gaussian
@@ -27,12 +29,6 @@ MODULE qs_cdft_types
                                               qs_outer_scf_type
    USE pw_types,                        ONLY: pw_p_type
    USE qs_cdft_opt_types,               ONLY: cdft_opt_type_release
-   USE input_constants,                 ONLY: cdft_alpha_constraint,&
-                                              cdft_beta_constraint,&
-                                              cdft_charge_constraint,&
-                                              cdft_magnetization_constraint,&
-                                              outer_scf_becke_constraint,&
-                                              outer_scf_hirshfeld_constraint
 #include "./base/base_uses.f90"
 
    IMPLICIT NONE
@@ -476,17 +472,17 @@ CONTAINS
                IF (ALLOCATED(cdft_control%group(i)%d_sum_const_dR)) &
                   DEALLOCATE (cdft_control%group(i)%d_sum_const_dR)
 
-                  IF (cdft_control%type == outer_scf_becke_constraint) THEN
-                    IF (ASSOCIATED(cdft_control%group(i)%gradients)) &
-                       DEALLOCATE (cdft_control%group(i)%gradients)
-                  ELSE IF (cdft_control%type == outer_scf_hirshfeld_constraint) THEN
-                    IF (ASSOCIATED(cdft_control%group(i)%gradients_x)) &
-                       DEALLOCATE (cdft_control%group(i)%gradients_x)
-                    IF (ASSOCIATED(cdft_control%group(i)%gradients_y)) &
-                       DEALLOCATE (cdft_control%group(i)%gradients_y)
-                    IF (ASSOCIATED(cdft_control%group(i)%gradients_z)) &
-                       DEALLOCATE (cdft_control%group(i)%gradients_z)
-                END IF
+               IF (cdft_control%type == outer_scf_becke_constraint) THEN
+                  IF (ASSOCIATED(cdft_control%group(i)%gradients)) &
+                     DEALLOCATE (cdft_control%group(i)%gradients)
+               ELSE IF (cdft_control%type == outer_scf_hirshfeld_constraint) THEN
+                  IF (ASSOCIATED(cdft_control%group(i)%gradients_x)) &
+                     DEALLOCATE (cdft_control%group(i)%gradients_x)
+                  IF (ASSOCIATED(cdft_control%group(i)%gradients_y)) &
+                     DEALLOCATE (cdft_control%group(i)%gradients_y)
+                  IF (ASSOCIATED(cdft_control%group(i)%gradients_z)) &
+                     DEALLOCATE (cdft_control%group(i)%gradients_z)
+               END IF
 
                IF (ASSOCIATED(cdft_control%group(i)%integrated)) &
                   DEALLOCATE (cdft_control%group(i)%integrated)
