@@ -831,7 +831,6 @@ END SUBROUTINE becke_constraint_low
                                                        zetp=alpha, eps=hirshfeld_control%atomic_cutoff, &
                                                        pab=pab, o1=0, o2=0, &  ! without map_consistent
                                                        prefactor=1.0_dp, cutoff=0.0_dp)
-                     ! IF (para_env%ionode) PRINT *, "radius", radius
                   END IF
 
                   IF (igroup == 1) THEN
@@ -1449,8 +1448,6 @@ SUBROUTINE cdft_constraint_force(qs_env)
                            CPABORT("Unknown constraint type.")
                         END SELECT
 
-                        IF (para_env%ionode) PRINT *, "sign 1", sign
-
                         IF (cdft_control%type == outer_scf_becke_constraint) THEN
 
                               cdft_control%group(igroup)%integrated(:, iatom) = &
@@ -1518,8 +1515,6 @@ SUBROUTINE cdft_constraint_force(qs_env)
                           CASE DEFAULT
                              CPABORT("Unknown constraint type.")
                           END SELECT
-
-                          IF (para_env%ionode) PRINT *, "sign 2", sign
 
                         ! Integrate gradient of weight function
                         IF (cdft_control%type == outer_scf_becke_constraint) THEN
