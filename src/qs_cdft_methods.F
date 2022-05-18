@@ -1405,6 +1405,7 @@ CONTAINS
       ub(1:3) = rho_r(1)%pw%pw_grid%bounds_local(2, 1:3)
       bo = cdft_control%group(1)%weight%pw%pw_grid%bounds_local
       dvol = cdft_control%group(1)%weight%pw%pw_grid%dvol
+      sign = 1.0_dp
 
       IF (cdft_control%type == outer_scf_becke_constraint) THEN
          IF (.NOT. cdft_control%becke_control%in_memory) THEN
