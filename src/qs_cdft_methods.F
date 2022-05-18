@@ -698,6 +698,48 @@ CONTAINS
       cube_info = pw_env%cube_info(1)
       radius = 100.0_dp
 
+      ! Get size of rs and pw grids
+      dr_pw(1) = 0.0_dp
+      dr_pw(2) = 0.0_dp
+      dr_pw(3) = 0.0_dp
+      origin(1) = 0.0_dp
+      origin(2) = 0.0_dp
+      origin(3) = 0.0_dp
+      npts(1) = 0.0_dp
+      npts(2) = 0.0_dp
+      npts(3) = 0.0_dp
+      dr_rs(1) = 0.0_dp
+      dr_rs(2) = 0.0_dp
+      dr_rs(3) = 0.0_dp
+      lb_pw(1) = 0.0_dp
+      lb_pw(2) = 0.0_dp
+      lb_pw(3) = 0.0_dp
+      ub_pw(1) = 0.0_dp
+      ub_pw(2) = 0.0_dp
+      ub_pw(3) = 0.0_dp
+
+      ! dr_pw(1) = rho_r(1)%pw%pw_grid%dr(1)
+      ! dr_pw(2) = rho_r(1)%pw%pw_grid%dr(2)
+      ! dr_pw(3) = rho_r(1)%pw%pw_grid%dr(3)
+      ! origin(1) = (dr_pw(1)*npts(1))*0.5_dp
+      ! origin(2) = (dr_pw(2)*npts(2))*0.5_dp
+      ! origin(3) = (dr_pw(3)*npts(3))*0.5_dp
+
+      npts = rho_r(1)%pw%pw_grid%npts
+      dr_pw = rho_r(1)%pw%pw_grid%dr
+      dr_rs(1) = rs_rho_all%desc%dh(1, 1)
+      dr_rs(2) = rs_rho_all%desc%dh(2, 2)
+      dr_rs(3) = rs_rho_all%desc%dh(3, 3)
+      origin(:) = (dr_pw(:)*npts(:))*0.5_dp
+      lb_pw(1:3) = rho_r(1)%pw%pw_grid%bounds_local(1, 1:3)
+      ub_pw(1:3) = rho_r(1)%pw%pw_grid%bounds_local(2, 1:3)
+      lb_rs(1) = LBOUND(rs_rho_all%r(:, :, :), 1)
+      lb_rs(2) = LBOUND(rs_rho_all%r(:, :, :), 2)
+      lb_rs(3) = LBOUND(rs_rho_all%r(:, :, :), 3)
+      ub_rs(1) = UBOUND(rs_rho_all%r(:, :, :), 1)
+      ub_rs(2) = UBOUND(rs_rho_all%r(:, :, :), 2)
+      ub_rs(3) = UBOUND(rs_rho_all%r(:, :, :), 3)
+
       ! For each CDFT group
       DO igroup = 1, SIZE(cdft_control%group)
 
@@ -709,39 +751,6 @@ CONTAINS
             CALL rs_grid_zero(rs_rho_all)
          END IF
 
-         ! Get size of rs and pw grids
-         dr_pw(1) = 0.0_dp
-         dr_pw(2) = 0.0_dp
-         dr_pw(3) = 0.0_dp
-         origin(1) = 0.0_dp
-         origin(2) = 0.0_dp
-         origin(3) = 0.0_dp
-         npts(1) = 0.0_dp
-         npts(2) = 0.0_dp
-         npts(3) = 0.0_dp
-         dr_rs(1) = 0.0_dp
-         dr_rs(2) = 0.0_dp
-         dr_rs(3) = 0.0_dp
-         lb_pw(1) = 0.0_dp
-         lb_pw(2) = 0.0_dp
-         lb_pw(3) = 0.0_dp
-         ub_pw(1) = 0.0_dp
-         ub_pw(2) = 0.0_dp
-         ub_pw(3) = 0.0_dp
-         npts = rho_r(1)%pw%pw_grid%npts
-         dr_pw = rho_r(1)%pw%pw_grid%dr
-         dr_rs(1) = rs_rho_all%desc%dh(1, 1)
-         dr_rs(2) = rs_rho_all%desc%dh(2, 2)
-         dr_rs(3) = rs_rho_all%desc%dh(3, 3)
-         origin(:) = (dr_pw(:)*npts(:))*0.5_dp
-         lb_pw(1:3) = rho_r(1)%pw%pw_grid%bounds_local(1, 1:3)
-         ub_pw(1:3) = rho_r(1)%pw%pw_grid%bounds_local(2, 1:3)
-         lb_rs(1) = LBOUND(rs_rho_all%r(:, :, :), 1)
-         lb_rs(2) = LBOUND(rs_rho_all%r(:, :, :), 2)
-         lb_rs(3) = LBOUND(rs_rho_all%r(:, :, :), 3)
-         ub_rs(1) = UBOUND(rs_rho_all%r(:, :, :), 1)
-         ub_rs(2) = UBOUND(rs_rho_all%r(:, :, :), 2)
-         ub_rs(3) = UBOUND(rs_rho_all%r(:, :, :), 3)
          bo = cdft_control%group(igroup)%weight%pw%pw_grid%bounds_local
 
          ! Coefficients
