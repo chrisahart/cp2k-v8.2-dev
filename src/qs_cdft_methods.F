@@ -710,12 +710,24 @@ CONTAINS
          END IF
 
          ! Get size of rs and pw grids
-         dr_pw(:) = 0.0_dp
-         origin(:) = 0.0_dp
-         npts(:) = 0.0_dp
-         dr_rs(:) = 0.0_dp
-         lb_pw(:) = 0.0_dp
-         ub_pw(:) = 0.0_dp
+         dr_pw(1) = 0.0_dp
+         dr_pw(2) = 0.0_dp
+         dr_pw(3) = 0.0_dp
+         origin(1) = 0.0_dp
+         origin(2) = 0.0_dp
+         origin(3) = 0.0_dp
+         npts(1) = 0.0_dp
+         npts(2) = 0.0_dp
+         npts(3) = 0.0_dp
+         dr_rs(1) = 0.0_dp
+         dr_rs(2) = 0.0_dp
+         dr_rs(3) = 0.0_dp
+         lb_pw(1) = 0.0_dp
+         lb_pw(2) = 0.0_dp
+         lb_pw(3) = 0.0_dp
+         ub_pw(1) = 0.0_dp
+         ub_pw(2) = 0.0_dp
+         ub_pw(3) = 0.0_dp
          npts = rho_r(1)%pw%pw_grid%npts
          dr_pw = rho_r(1)%pw%pw_grid%dr
          dr_rs(1) = rs_rho_all%desc%dh(1, 1)
