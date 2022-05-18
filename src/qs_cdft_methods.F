@@ -711,10 +711,12 @@ CONTAINS
 
          ! Get size of rs and pw grids
          npts = rho_r(1)%pw%pw_grid%npts
+         dr_pw(:) = 0.0_dp
          dr_pw = rho_r(1)%pw%pw_grid%dr
          dr_rs(1) = rs_rho_all%desc%dh(1, 1)
          dr_rs(2) = rs_rho_all%desc%dh(2, 2)
          dr_rs(3) = rs_rho_all%desc%dh(3, 3)
+         origin(:) = 0.0_dp
          origin(:) = (dr_pw(:)*npts(:))*0.5_dp
          lb_pw(1:3) = rho_r(1)%pw%pw_grid%bounds_local(1, 1:3)
          ub_pw(1:3) = rho_r(1)%pw%pw_grid%bounds_local(2, 1:3)
